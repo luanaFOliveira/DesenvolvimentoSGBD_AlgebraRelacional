@@ -6,11 +6,16 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class Form implements ActionListener{
+
+
+
+public class Form extends JFrame implements ActionListener{
 
 	JFrame frame = new JFrame();
 	JLabel label = new JLabel("HELLO");
@@ -20,6 +25,7 @@ public class Form implements ActionListener{
 	private int oldYcoord;
 	private JButton btnNewText;
 	private List<String> txtContent;
+
 	
 	public Form(String inf,String tipo) {
 		
@@ -33,7 +39,7 @@ public class Form implements ActionListener{
 		frame.getContentPane().setLayout(null);
 		
 		
-		JLabel lblSeleo = new JLabel("Seleção");
+		JLabel lblSeleo = new JLabel("Projecao");
 		lblSeleo.setBounds(150, 40, 70, 15);
 		frame.getContentPane().add(lblSeleo);
 		
@@ -46,7 +52,7 @@ public class Form implements ActionListener{
 		frame.getContentPane().add(txtSeleo);
 		txtSeleo.setColumns(10);
 		
-		txtContent.add(txtSeleo.getText());
+		//txtContent.add(txtSeleo.getText());
 		oldYcoord = 60;
 		
 		btnEnviar = new JButton("Enviar");
@@ -60,29 +66,39 @@ public class Form implements ActionListener{
 		frame.getContentPane().add(btnNewText);
 		frame.setVisible(true);
 		btnNewText.addActionListener(this);
+		
+		String columns[] = {"nome","id","idade"};
+		JComboBox comboBox = new JComboBox(columns);
+		comboBox.setBounds(100, 200, 100, 34);
+		
+		JPanel panel = new JPanel();
+		panel.add(comboBox);
+		
+		frame.add(panel);
 
 	}
 	
 	public void createTextField() {
 		
 		oldYcoord = oldYcoord + 30;
-		/*
-		JLabel newlbl = new JLabel(label);
+		
+		JLabel newlbl = new JLabel();
 		newlbl.setBounds(100, oldYcoord, 70, 15);
 		frame.getContentPane().add(newlbl);
-		*/
 		
-		JTextField newlbl = new JTextField();
+		/*
+		JTextField newtxt = new JTextField();
 		newlbl.setBounds(80, oldYcoord, 70, 15);
 		newlbl.setBackground(null);
 		newlbl.setBorder(null);
 		frame.getContentPane().add(newlbl);
+		*/
 		
 		JTextField newtxt = new JTextField();
 		newtxt.setBounds(150,oldYcoord , 100, 20);
 		frame.getContentPane().add(newtxt);
 		newtxt.setColumns(10);
-		txtContent.add(newtxt.getText());
+		//txtContent.add(newtxt.getText());
 
 	}
 	
@@ -107,3 +123,45 @@ public class Form implements ActionListener{
 		
 	}
 }
+
+
+
+/*
+class Form extends JFrame implements ActionListener{
+	
+	static JFrame frame;
+	static JComboBox dropDownColumns;
+	static JLabel labelProj;
+	
+	public Form() {
+		frame = new JFrame("Projecao");
+		//frame.setLayout(new FlowLayout());
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		frame.setSize(400,300);
+
+
+		String columns[] = {"nome","id","idade"};
+		
+		dropDownColumns = new JComboBox(columns);
+		
+		labelProj = new JLabel("Selecione as colunas");
+		
+		JPanel panel = new JPanel();
+		panel.add(labelProj);
+		panel.add(dropDownColumns);
+		
+		frame.add(panel);
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
+	
+}
+*/

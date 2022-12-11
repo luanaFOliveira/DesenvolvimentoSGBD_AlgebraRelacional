@@ -187,16 +187,16 @@ public class ActionClass extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == tipoProjecao.getButton()) {
 				assignVariables("projecao","π  projecao");
-				
+				form = new Form(inf,"projecao");
+				System.out.println("projecao form");
 			}else if(e.getSource() == tipoSelecao.getButton() ) {
 				assignVariables("selecao","σ  selecao");
-				//form = new Form(inf,"select");
-				form = tipoSelecao.createForm();
+				//form = tipoSelecao.createForm();
 				
 			}else if(e.getSource() == tipoProdutoCartesiano.getButton()) {
 				assignVariables("produtoCartesiano","✕  produto cartesiano");
 				
-				System.out.println(form.getPredicate());
+				//System.out.println(form.getPredicate());
 
 			}else if(e.getSource() == tipoUniao.getButton()) {
 				assignVariables("uniao","∪  uniao");
