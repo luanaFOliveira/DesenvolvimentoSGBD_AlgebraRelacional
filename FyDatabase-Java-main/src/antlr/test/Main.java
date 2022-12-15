@@ -30,6 +30,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		
+		/*
 		List<String[]> commands = new ArrayList<>();
 		
 		if(args.length != 1) {
@@ -49,7 +50,7 @@ public class Main {
 				commands.add(evaluation.split(";"));
 			}
 				
-		}
+		}*/
 		
 		Prototype p1 = new Prototype();
         p1.addColumn("id",4,Column.PRIMARY_KEY);
@@ -60,14 +61,18 @@ public class Main {
         p1.addColumn("salario",4,Column.NONE);
         p1.addColumn("idCidade",4,Column.NONE);
         
+        p1.getColumns().forEach(x -> {
+        	System.out.println(x.getName());
+        });
+        
         Table users = SimpleTable.openTable("users",p1);
 		
         users.open();
         
         Operator selectSomeUsers = new TableScan(users, Arrays.asList("id","idade","nome", "idCidade", "salario"));
         
-        Operator executor = null;
-        
+        Operator executor = selectSomeUsers;
+        /*
         System.out.println(commands.get(0)[1].substring(0, commands.get(0)[1].indexOf(">")));
         
         if(commands.get(0)[0].equals("Select")) {
@@ -80,8 +85,8 @@ public class Main {
         	executor = where;
         	executor.open();
         
-        }
-        
+        }*/
+        executor.open();
         while(executor.hasNext()){
             Tuple t = executor.next();
             String str = "";
@@ -108,7 +113,7 @@ public class Main {
                     str+=" | ";
                 }
             }
-            System.out.println(str);
+            //System.out.println(str);
         }
 	}
 	

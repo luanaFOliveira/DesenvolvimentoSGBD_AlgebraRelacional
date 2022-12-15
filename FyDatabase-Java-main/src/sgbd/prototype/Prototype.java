@@ -25,7 +25,7 @@ public class Prototype implements Iterable<Column>{
 
 	public void addColumn(Column c) {
 		if(c == null)
-			throw new DataBaseException("Prototype->addColumn","Column passada é nula");
+			throw new DataBaseException("Prototype->addColumn","Column passada ï¿½ nula");
 		columns.add(c);
 		if(c.isDinamicSize())stat=false;
 	}
@@ -47,6 +47,10 @@ public class Prototype implements Iterable<Column>{
 		return columns.get(val);
 	}
 	
+	public ArrayList<Column> getColumns(){
+		return columns;
+	}
+	
 	public short size() {
 		return (short)columns.size();
 	}
@@ -54,7 +58,7 @@ public class Prototype implements Iterable<Column>{
 	public TranslatorApi validateColumns()  {
 		DataBaseException ex =null;
 		if(size()==0){
-			String error="Não é valido uma tabela com nenhuma coluna!";
+			String error="Nï¿½o ï¿½ valido uma tabela com nenhuma coluna!";
 			ex=new DataBaseException("Prototype->ValidateColumns",error);
 			ex.addValidation("Min:1");
 			throw ex;
@@ -63,20 +67,20 @@ public class Prototype implements Iterable<Column>{
 			Column col=getColumn(x);
 			int namelen=col.getName().length();
 			if(namelen>240 || namelen<1){
-				String error="Coluna "+x+" tem nome de tamanhos inválido!";
+				String error="Coluna "+x+" tem nome de tamanhos invï¿½lido!";
 				ex=new DataBaseException("Prototype->ValidateColumns",error);
 				ex.addValidation("Max:240");
 				ex.addValidation("Min:1");
 				throw ex;
 			}
 			if(col.isPrimaryKey() && col.camBeNull()){
-				String error="Coluna "+col.getName()+" não pode ser nula e ao mesmo tempo ser primary key!";
+				String error="Coluna "+col.getName()+" nï¿½o pode ser nula e ao mesmo tempo ser primary key!";
 				ex=new DataBaseException("Prototype->ValidateColumns",error);
 				ex.addValidation("NULL not in PRIMARY KEY");
 				throw ex;
 			}
 			if(col.isPrimaryKey() && col.isDinamicSize()){
-				String error="Coluna "+col.getName()+" não pode ser dinamica ao mesmo tempo que é primary key!";
+				String error="Coluna "+col.getName()+" nï¿½o pode ser dinamica ao mesmo tempo que ï¿½ primary key!";
 				ex=new DataBaseException("Prototype->ValidateColumns",error);
 				ex.addValidation("DINAMIC not in PRIMARY KEY");
 				throw ex;
