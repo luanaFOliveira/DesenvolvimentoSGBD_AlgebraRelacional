@@ -19,7 +19,16 @@ import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import sgbd.*;
+import sgbd.prototype.Column;
+import sgbd.prototype.ComplexRowData;
+import sgbd.prototype.Prototype;
+import sgbd.query.Operator;
+import sgbd.query.Tuple;
+import sgbd.table.SimpleTable;
+import sgbd.table.Table;
 
 public class ActionClass extends JFrame implements ActionListener {
 	
@@ -49,7 +58,12 @@ public class ActionClass extends JFrame implements ActionListener {
 	
 	private String inf;
 	private Form form;
+	private FormFrame formFrame;
 	
+	private Table users;
+	private Table cidades;
+	private Prototype p1;
+	private Prototype p2;
 	
 	public ActionClass() {
 		super("Jgraph teste");
@@ -122,6 +136,7 @@ public class ActionClass extends JFrame implements ActionListener {
 		
 		this.listCells = new ArrayList<>();
 		
+		createTables();
 		
 		graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
 			@Override
@@ -152,6 +167,10 @@ public class ActionClass extends JFrame implements ActionListener {
 					if( createEdge == true && cell != newParent) {
 						graph.insertEdge(newParent, null,"", newParent, cell);
 						((mxCell) cell).setParent((mxCell)newParent);
+						if(style == "projecao") {
+							formFrame.setAtributos(p1, users);
+							formFrame.main(null);
+						}
 						newParent = null;
 						createEdge = false;
 						
@@ -187,7 +206,6 @@ public class ActionClass extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == tipoProjecao.getButton()) {
 				assignVariables("projecao","π  projecao");
-				form = new Form(inf,"projecao");
 				System.out.println("projecao form");
 			}else if(e.getSource() == tipoSelecao.getButton() ) {
 				assignVariables("selecao","σ  selecao");
@@ -208,16 +226,43 @@ public class ActionClass extends JFrame implements ActionListener {
 				assignVariables("renomeacao","ρ  renomeacao");
 				
 			}else if(e.getSource() == tipoTabela.getButton()) {
-				assignVariables("tabela","tabela");
+				createTables();
+				assignVariables("tabela","users");
 			}else if(e.getSource() == edgeButton) {
 				createEdge = true;
 			}
 			
 	}
 	
+	public void createTables() {
+		p1 = new Prototype();
+        p1.addColumn("id",4,Column.PRIMARY_KEY);
+        p1.addColumn("nome",255,Column.DINAMIC_COLUMN_SIZE);
+        p1.addColumn("anoNascimento",4,Column.NONE);
+        p1.addColumn("email",120,Column.NONE);
+        p1.addColumn("idade",4,Column.CAM_NULL_COLUMN);
+        p1.addColumn("salario",4,Column.NONE);
+        p1.addColumn("idCidade",4,Column.NONE);
+
+        p2 = new Prototype();
+        p2.addColumn("id",4, Column.PRIMARY_KEY);
+        p2.addColumn("nome",255,Column.DINAMIC_COLUMN_SIZE);
+
+        users = SimpleTable.openTable("users",p1);
+
+        cidades = SimpleTable.openTable("cidades",p2);
+
+        users.open();
+        cidades.open();
+        
+        
+	}
 	
+	
+
 }
 	
+
 
 
 

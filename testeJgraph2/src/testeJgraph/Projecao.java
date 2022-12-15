@@ -11,9 +11,12 @@ import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxUtils;
 import com.mxgraph.view.mxStylesheet;
 
+import sgbd.query.Operator;
+
 public class Projecao{
 	private JButton projecaoButton;
 	private JPanel panelProjecao;
+	
 	
 	public Projecao(mxStylesheet stylesheet) {
 				
@@ -22,8 +25,7 @@ public class Projecao{
 		panelProjecao = new JPanel();
 		panelProjecao.add(projecaoButton);
 	    stylesheet.putCellStyle("projecao",createProjecaoStyle());
-	    
-	    
+
 	}
 
 	
