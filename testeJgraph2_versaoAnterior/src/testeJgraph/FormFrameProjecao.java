@@ -7,6 +7,7 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -18,6 +19,14 @@ import javax.swing.JTextArea;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
+
+import sgbd.prototype.Column;
+import sgbd.prototype.ComplexRowData;
+import sgbd.prototype.Prototype;
+import sgbd.query.Operator;
+import sgbd.query.Tuple;
+import sgbd.query.unaryop.ProjectionOperator;
+import sgbd.table.Table;
 
 public class FormFrameProjecao extends JFrame implements ActionListener {
 
@@ -38,14 +47,20 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	private JTextArea textArea_1;
 	private JTextArea textArea;
 	
+	private List<String> columnsResult;
+	private Table tabela; 
+	private ArrayList<Column> columnsArrayList;
+	private Prototype p1;
+	private Operator projecao;
+	
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
+	public static void main(Prototype pr, Table tabela) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {
-					FormFrameProjecao window = new FormFrameProjecao();
+				try {					
+					FormFrameProjecao window = new FormFrameProjecao(pr,tabela);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -57,7 +72,9 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	/**
 	 * Create the frame.
 	 */
-	public FormFrameProjecao() {
+	public FormFrameProjecao(Prototype pr, Table tabela) {
+		this.tabela =tabela;
+		this.p1 = pr;
 		initialize();
 
 	}
@@ -65,33 +82,19 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	private void initialize() {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 500, 400);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		//System.out.println(tabela);
 
 		
 		String columns[] = {"nome","id","idade"};
 		
 		columnsList = new ArrayList<String>();
 		
-		//columnsList = setColumns();
-		//columnsArrayList = p1.getColumns();
-		//columnsArrayList.to
-		columnsList.addAll(Arrays.asList(columns));
+		columnsList = setColumns();
+		
 		
 		columnsComboBox = new JComboBox(columnsList.toArray(new String[0]));
-		/*
-		itemListener = new ItemListener() {
-            public void itemStateChanged(ItemEvent itemEvent) {
-                if (itemEvent.getStateChange() == ItemEvent.SELECTED ) {
-                    String item = (String) itemEvent.getItem();
-                    System.out.println("Item: " + item + " removed from list");
-                    removeItem(item);
-                }
-            }
-        };
-        columnsComboBox.addItemListener(itemListener);
-        */
+		
 		Ycoordenate = columnsComboBox.getAlignmentY();
 		
 		
@@ -102,12 +105,13 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 		JLabel lblTermos = new JLabel("Termos");
 		
 		textArea = new JTextArea();
-		//textArea.setText(textResultado);
 		
 		JLabel lblResultado = new JLabel("Resultado");
 		
 		textArea_1 = new JTextArea();
-		//textArea_1.setText(textTermos);
+		
+		columnsResult = new ArrayList<String>();
+		
 		
 		btnAdd = new JButton("Add");
 		btnAdd.addActionListener(this);
@@ -179,15 +183,87 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 		if(e.getSource() == btnAdd){
 			//quando tu clica em adicionar, ele adiciona nos termos e dai tira a coluna q foi usada
 			if(columnsComboBox.getItemCount() > 0) {
-				textTermos = columnsComboBox.getSelectedItem().toString();
+				textTermos = textArea_1.getText() + "\n" +columnsComboBox.getSelectedItem().toString() ;
 				columnsComboBox.removeItemAt(columnsComboBox.getSelectedIndex());
 				textArea_1.setText(textTermos);
+				columnsResult.add(columnsComboBox.getSelectedItem().toString());
 			}
 
 		}else if(e.getSource() == btnRemove) {
 			System.out.println("botao remove");
 		}else if(e.getSource() == btnPronto) {
-			System.out.println("botao pronto");
+	        projecao = new ProjectionOperator(tabela,columnsResult);
+			showResult(projecao);		
 		}
+	}
+	
+	
+	public Operator getOperator() {
+		return this.projecao;
+	}
+	
+	public void showResult(Operator op) {
+		System.out.println("show Results");
+		
+		Operator executor = op;	
+	    executor.open();
+
+	    while(executor.hasNext()){
+        	System.out.println("dentro do while");
+	        Tuple t = executor.next();
+	        String str = "";
+	        for (Map.Entry<String, ComplexRowData> row: t){
+	            for(Map.Entry<String,byte[]> data:row.getValue()) {
+	                switch(data.getKey()){
+	                    case "idade":
+	                    case "anoNascimento":
+	                    case "id":
+	                    case "idCidade":
+	                    case "size":
+	                        str+=row.getKey()+"."+data.getKey()+"="+row.getValue().getInt(data.getKey());
+	                        break;
+	                    case "salario":
+	                        str+=row.getKey()+"."+data.getKey()+"="+row.getValue().getFloat(data.getKey());
+	                        break;
+	                    case "name":
+	                    case "nome":
+	                    default:
+	                    	System.out.println("dentro do defalut");
+	                        str+=row.getKey()+"."+data.getKey()+"="+row.getValue().getString(data.getKey());
+	                        break;
+	                }
+	                str+=" | ";
+	            }
+	        }
+	        System.out.println(str);
+			textArea.setText(str);
+	    }
+	    //Fecha operador
+	    executor.close();
+		
+	}
+	
+	public ArrayList<Column> getColumnsList(Prototype pr) {
+		return pr.getColumns();
+	}
+	
+	public void setAtributos(Prototype pr,Table tabela) {
+		this.tabela = tabela;
+		this.p1 = pr;
+		
+	}
+	
+	public List<String> setColumns() {
+		
+		columnsArrayList = p1.getColumns();
+		
+		for(int i=0;i<columnsArrayList.size();i++) {
+			
+			Column newColumn = columnsArrayList.get(i);
+			columnsList.add(newColumn.getName());
+		}
+		return columnsList;
+		//columnsList.addAll(Arrays.asList(columns));
+		
 	}
 }

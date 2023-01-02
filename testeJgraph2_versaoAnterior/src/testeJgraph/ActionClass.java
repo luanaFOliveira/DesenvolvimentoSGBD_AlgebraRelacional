@@ -20,6 +20,11 @@ import com.mxgraph.view.mxStylesheet;
 import java.util.ArrayList;
 import java.util.List;
 import sgbd.*;
+import sgbd.prototype.Column;
+import sgbd.prototype.Prototype;
+import sgbd.query.Operator;
+import sgbd.table.SimpleTable;
+import sgbd.table.Table;
 
 public class ActionClass extends JFrame implements ActionListener {
 	
@@ -47,9 +52,15 @@ public class ActionClass extends JFrame implements ActionListener {
 	
 	private List<Object> listCells;
 	
-	private String inf;
-	private Form form;
+	//private String inf;
 	private FormFrameProjecao formFrameProjecao;
+	private FormFrameSelecao formFrameSelecao;
+	
+	private Table users;
+	private Table cidades;
+	private Prototype p1;
+	private Prototype p2;
+	private Operator operator;
 	
 	public ActionClass() {
 		super("Jgraph teste");
@@ -122,6 +133,7 @@ public class ActionClass extends JFrame implements ActionListener {
 		
 		this.listCells = new ArrayList<>();
 		
+		createTables();
 		
 		graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
 			@Override
@@ -133,17 +145,7 @@ public class ActionClass extends JFrame implements ActionListener {
 					listCells.add(newCell);
 					createCell = false;
 				}
-				/*else if(cell == null && newCell != null) {
-					newCellChild = graph.insertVertex(parent, null, "no", e.getX(), e.getY(), 80, 30,style);
-					listCells.add(newCellChild);
-					graph.insertEdge(parent, null, "", newCell, newCellChild);
-				}
 				
-				if(cell != null) {
-					newCell = cell;
-					style = ((mxCell) cell).getStyle();
-				}
-				*/
 				if(cell != null) {
 					System.out.println(((mxCell) cell).getValue().toString());
 					if(createEdge == true && newParent == null) {
@@ -153,8 +155,13 @@ public class ActionClass extends JFrame implements ActionListener {
 						graph.insertEdge(newParent, null,"", newParent, cell);
 						((mxCell) cell).setParent((mxCell)newParent);
 						if(style == "projecao") {
-							formFrameProjecao.main(null);
+							formFrameProjecao.main(p1,users);
+							//operator = formFrameProjecao.getOperator();
+						}else if(style == "selecao") {
+							formFrameSelecao.main(p1,users);
+							//operator = formFrameSelecao.getOperator();
 						}
+						
 						newParent = null;
 						createEdge = false;
 						
@@ -190,17 +197,13 @@ public class ActionClass extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == tipoProjecao.getButton()) {
 				assignVariables("projecao","π  projecao");
-				//form = new Form(inf,"projecao");
-				//System.out.println("projecao form");
+				
 			}else if(e.getSource() == tipoSelecao.getButton() ) {
 				assignVariables("selecao","σ  selecao");
-				//form = tipoSelecao.createForm();
 				
 			}else if(e.getSource() == tipoProdutoCartesiano.getButton()) {
 				assignVariables("produtoCartesiano","✕  produto cartesiano");
 				
-				//System.out.println(form.getPredicate());
-
 			}else if(e.getSource() == tipoUniao.getButton()) {
 				assignVariables("uniao","∪  uniao");
 				
@@ -216,6 +219,30 @@ public class ActionClass extends JFrame implements ActionListener {
 				createEdge = true;
 			}
 			
+	}
+	
+	public void createTables() {
+		p1 = new Prototype();
+        p1.addColumn("id",4,Column.PRIMARY_KEY);
+        p1.addColumn("nome",255,Column.DINAMIC_COLUMN_SIZE);
+        p1.addColumn("anoNascimento",4,Column.NONE);
+        p1.addColumn("email",120,Column.NONE);
+        p1.addColumn("idade",4,Column.CAM_NULL_COLUMN);
+        p1.addColumn("salario",4,Column.NONE);
+        p1.addColumn("idCidade",4,Column.NONE);
+
+        p2 = new Prototype();
+        p2.addColumn("id",4, Column.PRIMARY_KEY);
+        p2.addColumn("nome",255,Column.DINAMIC_COLUMN_SIZE);
+
+        users = SimpleTable.openTable("users",p1);
+
+        cidades = SimpleTable.openTable("cidades",p2);
+
+        users.open();
+        cidades.open();
+        
+        
 	}
 	
 	

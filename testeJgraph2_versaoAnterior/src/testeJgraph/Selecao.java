@@ -24,7 +24,6 @@ import sgbd.query.unaryop.FilterOperator;
 public class Selecao{
 	private JButton selecaoButton;
 	private JPanel panelSelecao;
-	private Form selecaoForm;
 	private String inf;
 	
 	public Selecao(mxStylesheet stylesheet) {
@@ -67,14 +66,7 @@ public class Selecao{
 		return true;
 	}
 	
-	public Form createForm() {
-		selecaoForm = new Form(inf,"select");
-		return selecaoForm;
-	}
 	
-	public Form getForm() {
-		return selecaoForm;
-	}
 	
 	/*
 	Operator where = new FilterOperator(selectSomeUsers,(Tuple t)->{
