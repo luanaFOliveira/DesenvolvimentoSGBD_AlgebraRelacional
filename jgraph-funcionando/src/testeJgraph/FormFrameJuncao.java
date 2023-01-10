@@ -45,7 +45,7 @@ public class FormFrameJuncao extends JFrame implements ActionListener {
 	private Table tabela_1; 
 	private Table tabela_2; 
 	private Operator juncao;
-
+	
 
 
 	/**

@@ -19,6 +19,8 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 
+import com.mxgraph.model.mxCell;
+
 import entities.Cell;
 import sgbd.prototype.Column;
 import sgbd.prototype.ComplexRowData;
@@ -46,7 +48,8 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 	private Prototype p1;
 	private JButton btnPronto;
 	private Operator selecao;
-	private Cell cell;
+	private Object cell;
+	private List<Cell> cells; 
 	private Operator operator;
 	
 	private ResultFrame resultFrame;
@@ -54,11 +57,11 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 	/**
 	 * Launch the application.
 	 */
-	public static void main(Cell cell, Prototype p1, Table tabela, Operator operator) {
+	public static void main(Object cell, List<Cell> cells, Prototype p1, Table tabela, Operator operator) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					FormFrameSelecao frame = new FormFrameSelecao(cell, p1, tabela, operator);
+					FormFrameSelecao frame = new FormFrameSelecao(cell, cells, p1, tabela, operator);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -70,7 +73,7 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 	/**
 	 * Create the frame.
 	 */
-	public FormFrameSelecao(Cell cell, Prototype p1, Table tabela, Operator operator) {
+	public FormFrameSelecao(Object cell, List<Cell> cells, Prototype p1, Table tabela, Operator operator) {
 		
 		this.setVisible(true);
 		
@@ -78,6 +81,7 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 		this.tabela = tabela;
 		this.p1 = p1;
 		this.cell = cell;
+		this.cells = new ArrayList<>(cells);
 		
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 502, 262);
@@ -220,7 +224,7 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 			//textArea.setText(str);
 	    }
 	    
-	    cell.setOperator(executor);
+	    cells.stream().filter(x -> x.getCell().equals(((mxCell)cell))).findFirst().orElse(null).setOperator(executor);;
 	    
         resultFrame = new ResultFrame(textArea);
 	    //Fecha operador

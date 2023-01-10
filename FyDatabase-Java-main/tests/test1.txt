@@ -1,1 +1,0 @@
-select[idadef>20](teste)

@@ -173,7 +173,6 @@ public class ActionClass extends JFrame implements ActionListener {
 				if(cell != null) {
 					
 					System.out.println(((mxCell) cell).getValue().toString());
-					System.out.println(listCells.stream().filter(x -> x.getCell().equals(cell)).findFirst().orElse(null).getOperator() + " a");
 					
 					if(createEdge == true && newParent == null) {
 						newParent = cell;
@@ -183,17 +182,16 @@ public class ActionClass extends JFrame implements ActionListener {
 						graph.insertEdge(newParent, null,"", newParent, cell);
 						((mxCell) cell).setParent((mxCell)newParent);
 						
-						Cell cellEntity = listCells.stream().filter(x -> x.getCell().equals(cell)).findFirst().orElse(null);
+						Cell cellEntity = listCells.stream().filter(x -> x.getCell().equals(((mxCell)cell).getParent())).findFirst().orElse(null);
 						
 						if(style == "projecao") {
 							
-							formFrameProjecao = new FormFrameProjecao(cellEntity.getPrototype(), cellEntity.getTable());
+							formFrameProjecao = new FormFrameProjecao(cell, listCells, cellEntity.getPrototype(), cellEntity.getTable(), cellEntity.getOperator());
 							currentOperator = formFrameProjecao.getOperator();
 							
 						}else if(style == "selecao") {
 							
-							System.out.println(cellEntity.getName() + " P");
-							formFrameSelecao = new FormFrameSelecao(cellEntity, cellEntity.getPrototype(), cellEntity.getTable(), cellEntity.getOperator());
+							formFrameSelecao = new FormFrameSelecao(cell, listCells, cellEntity.getPrototype(), cellEntity.getTable(), cellEntity.getOperator());
 							currentOperator = formFrameSelecao.getOperator();
 							
 						}else if(style == "juncao") {

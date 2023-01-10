@@ -20,6 +20,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 
+import entities.Cell;
 import sgbd.prototype.Column;
 import sgbd.prototype.ComplexRowData;
 import sgbd.prototype.Prototype;
@@ -54,6 +55,9 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	private ArrayList<Column> columnsArrayList;
 	private Prototype p1;
 	private Operator projecao;
+	private Object cell;
+	private List<Cell> cells; 
+	private Operator operator;
 	
 	private ResultFrame resultFrame;
 
@@ -61,11 +65,11 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	/**
 	 * Launch the application.
 	 */
-	public static void main(Prototype pr, Table tabela) {
+	public static void main(Object cell, List<Cell> cells, Prototype pr, Table tabela, Operator operator) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {					
-					FormFrameProjecao window = new FormFrameProjecao(pr,tabela);
+					FormFrameProjecao window = new FormFrameProjecao(cell, cells, pr, tabela, operator);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -77,9 +81,14 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	/**
 	 * Create the frame.
 	 */
-	public FormFrameProjecao(Prototype pr, Table tabela) {
-		this.tabela =tabela;
+	public FormFrameProjecao(Object cell, List<Cell> cells, Prototype pr, Table tabela, Operator operator) {
+		
+		this.operator = operator;
+		this.tabela = tabela;
 		this.p1 = pr;
+		this.cell = cell;
+		this.cells = new ArrayList<>(cells);
+		
 		initialize();
 
 	}
@@ -194,6 +203,7 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	
 	public void showResult(List<String> columnsResult) {
 		
+		Operator table = operator == null ? new TableScan(tabela, columnsList) : operator;
         Operator executor = new ProjectionOperator(tabela, columnsResult);
         this.projecao = executor;
 	    executor.open();

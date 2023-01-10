@@ -1,30 +1,19 @@
 package testeJgraph;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.util.Hashtable;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxUtils;
 import com.mxgraph.view.mxStylesheet;
-import sgbd.*;
-import sgbd.query.*;
-
-import sgbd.query.Operator;
-import sgbd.query.Tuple;
-import sgbd.query.unaryop.FilterOperator;
 
 public class Selecao{
 	private JButton selecaoButton;
 	private JPanel panelSelecao;
-	private String inf;
 	
 	public Selecao(mxStylesheet stylesheet) {
 		
