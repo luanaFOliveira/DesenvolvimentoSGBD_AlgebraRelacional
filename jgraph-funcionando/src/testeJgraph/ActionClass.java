@@ -28,6 +28,7 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 
+import entities.Cell;
 import sgbd.prototype.Column;
 import sgbd.prototype.Prototype;
 import sgbd.prototype.RowData;
@@ -63,10 +64,10 @@ public class ActionClass extends JFrame implements ActionListener {
 	private JButton importButton;
 	private JToolBar toolBar;
 	
-	private List<Object> listCells;
+	private List<Cell> listCells;
 	
-	private List<Table> tables = new ArrayList<>();
-	private List<Prototype> ps = new ArrayList<>();
+	private Prototype currentPrototype = null;
+	private Table currentTable = null;
 	
 	//private String inf;
 	private FormFrameProjecao formFrameProjecao;
@@ -147,8 +148,6 @@ public class ActionClass extends JFrame implements ActionListener {
 		Object parent = graph.getDefaultParent();
 		graph.getModel().beginUpdate();
 		
-		
-		
 		mxHierarchicalLayout layout = new mxHierarchicalLayout(graph);
 		layout.setUseBoundingBox(false);
 		layout.execute(parent);
@@ -160,32 +159,48 @@ public class ActionClass extends JFrame implements ActionListener {
 			public void mouseClicked(MouseEvent e) {
 				// TODO Auto-generated method stub
 				cell = graphComponent.getCellAt(e.getX(), e.getY());
+				
 				if(createCell == true ) {
+
 					newCell = graph.insertVertex(parent,null, name, e.getX(), e.getY(), 80, 30,style);
-					listCells.add(newCell);
+					
+					listCells.add(new Cell(name, style, newCell, currentTable, currentPrototype));
+					
 					createCell = false;
+					
 				}
 				
 				if(cell != null) {
+					
 					System.out.println(((mxCell) cell).getValue().toString());
+					System.out.println(listCells.stream().filter(x -> x.getCell().equals(cell)).findFirst().orElse(null).getOperator() + " a");
+					
 					if(createEdge == true && newParent == null) {
 						newParent = cell;
 					}
 					if( createEdge == true && cell != newParent) {
+						
 						graph.insertEdge(newParent, null,"", newParent, cell);
 						((mxCell) cell).setParent((mxCell)newParent);
+						
+						Cell cellEntity = listCells.stream().filter(x -> x.getCell().equals(cell)).findFirst().orElse(null);
+						
 						if(style == "projecao") {
-							//formFrameProjecao.main(ps.get(0), tables.get(0));
-							formFrameProjecao = new FormFrameProjecao(ps.get(0), tables.get(0));
+							
+							formFrameProjecao = new FormFrameProjecao(cellEntity.getPrototype(), cellEntity.getTable());
 							currentOperator = formFrameProjecao.getOperator();
+							
 						}else if(style == "selecao") {
-							//formFrameSelecao.main(ps.get(0), tables.get(0));
-							formFrameSelecao = new FormFrameSelecao(ps.get(0),tables.get(0));
+							
+							System.out.println(cellEntity.getName() + " P");
+							formFrameSelecao = new FormFrameSelecao(cellEntity, cellEntity.getPrototype(), cellEntity.getTable(), cellEntity.getOperator());
 							currentOperator = formFrameSelecao.getOperator();
-							System.out.println(currentOperator);
+							
 						}else if(style == "juncao") {
-							formFrameJuncao = new FormFrameJuncao(ps.get(0),ps.get(1),tables.get(0),tables.get(1));
+							
+							//formFrameJuncao = new FormFrameJuncao(ps.get(0),ps.get(1),tables.get(0),tables.get(1));
 							currentOperator = formFrameJuncao.getOperator();
+							
 						}
 						
 						newParent = null;
@@ -210,13 +225,15 @@ public class ActionClass extends JFrame implements ActionListener {
 			
 	}
 
-	private void assignVariables(String styleVar,String nameVar) {
+	private void assignVariables(String styleVar, String nameVar) {
+		
 		createCell = true;
 		newCell = null;
 		newCellChild = null;
 		newParent = null;
 		style = styleVar;
 		name = nameVar;
+		
 	}
 	
 	private String importFile() {
@@ -324,23 +341,19 @@ public class ActionClass extends JFrame implements ActionListener {
 	}
 	
 	public void createTable(String fileName, List<String> columnsName, List<RowData> rows) {
-		Prototype p = new Prototype();
+		currentPrototype = new Prototype();
 		
-		p.addColumn(columnsName.get(0), 4, Column.PRIMARY_KEY);
+		currentPrototype.addColumn(columnsName.get(0), 4, Column.PRIMARY_KEY);
 		columnsName.remove(0);
 		
 		// adiciona todas as colunas
-		columnsName.forEach(x -> {p.addColumn(x, 100, Column.NONE);});
+		columnsName.forEach(x -> {currentPrototype.addColumn(x, 100, Column.NONE);});
 		
-        Table table = SimpleTable.openTable(fileName, p);
-        table.open();
-        rows.stream().forEach(x -> {table.insert(x);});
+        currentTable = SimpleTable.openTable(fileName, currentPrototype);
+        currentTable.open();
+        rows.stream().forEach(x -> {currentTable.insert(x);});
         
-        tables.add(table);
-        ps.add(p);
-
-        table.open();
-        
+        currentTable.open();
         
 	}
 	

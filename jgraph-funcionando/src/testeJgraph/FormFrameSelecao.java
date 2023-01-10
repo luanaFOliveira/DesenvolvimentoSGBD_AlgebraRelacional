@@ -14,12 +14,12 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 
+import entities.Cell;
 import sgbd.prototype.Column;
 import sgbd.prototype.ComplexRowData;
 import sgbd.prototype.Prototype;
@@ -27,7 +27,6 @@ import sgbd.query.Operator;
 import sgbd.query.Tuple;
 import sgbd.query.sourceop.TableScan;
 import sgbd.query.unaryop.FilterOperator;
-import sgbd.query.unaryop.ProjectionOperator;
 import sgbd.table.Table;
 
 
@@ -47,17 +46,19 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 	private Prototype p1;
 	private JButton btnPronto;
 	private Operator selecao;
+	private Cell cell;
+	private Operator operator;
 	
 	private ResultFrame resultFrame;
 	
 	/**
 	 * Launch the application.
 	 */
-	public static void main(Prototype p1, Table tabela) {
+	public static void main(Cell cell, Prototype p1, Table tabela, Operator operator) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					FormFrameSelecao frame = new FormFrameSelecao(p1, tabela);
+					FormFrameSelecao frame = new FormFrameSelecao(cell, p1, tabela, operator);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -69,10 +70,14 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 	/**
 	 * Create the frame.
 	 */
-	public FormFrameSelecao(Prototype p1, Table tabela) {
+	public FormFrameSelecao(Cell cell, Prototype p1, Table tabela, Operator operator) {
+		
 		this.setVisible(true);
+		
+		this.operator = operator;
 		this.tabela = tabela;
 		this.p1 = p1;
+		this.cell = cell;
 		
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 502, 262);
@@ -83,8 +88,6 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 		
 		columnsList = new ArrayList<String>();
 		columnsList = setColumns();
-		
-		
 		
 		comboBoxColunas = new JComboBox(columnsList.toArray(new String[0]));
 		
@@ -157,6 +160,7 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 		if(e.getSource() == btnPronto) {
 			//columnsResult = textArea_1.getText(); 
 			
+			System.out.println(operator + " R");
 	        showResult(comboBoxColunas.getSelectedItem().toString(), comboBoxOp.getSelectedItem().toString(), textField.getText());
 	        
 		}
@@ -170,7 +174,8 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 	public void showResult(String columnName, String op, String value) {
 		
 		System.out.println("----------------------------------------------");
-		Operator table = new TableScan(tabela, columnsList);
+		
+		Operator table = operator == null ? new TableScan(tabela, columnsList) : operator;
 		
 		Operator executor = new FilterOperator(table,(Tuple t)->{
 
@@ -214,6 +219,9 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 	        System.out.println(str);
 			//textArea.setText(str);
 	    }
+	    
+	    cell.setOperator(executor);
+	    
         resultFrame = new ResultFrame(textArea);
 	    //Fecha operador
 	    executor.close();

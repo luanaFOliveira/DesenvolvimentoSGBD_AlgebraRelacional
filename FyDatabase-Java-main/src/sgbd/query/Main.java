@@ -1,19 +1,19 @@
 package sgbd.query;
 
+import java.util.Arrays;
+import java.util.Map;
+
 import engine.info.Parameters;
 import sgbd.info.Query;
 import sgbd.prototype.Column;
 import sgbd.prototype.ComplexRowData;
 import sgbd.prototype.Prototype;
-import sgbd.query.binaryop.BlockNestedLoopJoin;
 import sgbd.query.sourceop.TableScan;
 import sgbd.query.unaryop.ExternalSortOperator;
 import sgbd.query.unaryop.FilterOperator;
+import sgbd.query.unaryop.ProjectionOperator;
 import sgbd.table.SimpleTable;
 import sgbd.table.Table;
-
-import java.util.Arrays;
-import java.util.Map;
 
 public class Main {
 
@@ -46,9 +46,7 @@ public class Main {
 
         Operator selectAllCidades = new TableScan(cidades);
         
-        Operator join = new BlockNestedLoopJoin(where,selectAllCidades,(t1, t2) -> {
-            return t1.getContent("users").getInt("idCidade") == t2.getContent("cidades").getInt("id");
-        });
+        Operator join = new ProjectionOperator(users, Arrays.asList("nome", "email"));
 
 //        Operator as = new AsOperator(join, new Conversor() {
 //            @Override
@@ -65,12 +63,12 @@ public class Main {
 
 
 
-        Operator sorted = new ExternalSortOperator(join,"cidades","nome",true);
+        //Operator sorted = new ExternalSortOperator(join,"cidades","nome",true);
 
 
         //Operator executor=sorted;
 
-        Operator executor = where;	
+        Operator executor = join;	
         
         executor.open();
         while(executor.hasNext()){

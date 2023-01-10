@@ -155,9 +155,8 @@ public class FormFrameJuncao extends JFrame implements ActionListener {
 		System.out.println("----------------------------------------------");
 		Operator table_1 = new TableScan(tabela_1, columnsList_1);
 		Operator table_2 = new TableScan(tabela_2, columnsList_2);
-		ComparableFilter<Tuple> comparator = new ComparableFilter<Tuple>(comp_1,comp_2);
 		
-		Operator executor = new NestedLoopJoin(table_1,table_2,(ComparableFilter<Tuple>) (comp_1,comp_2));
+		Operator executor = new NestedLoopJoin(table_1,table_2, (t1, t2) -> {return true;});
 		
 		this.juncao = executor;
 
