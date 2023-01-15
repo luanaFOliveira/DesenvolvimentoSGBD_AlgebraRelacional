@@ -7,20 +7,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxCell;
@@ -29,24 +24,23 @@ import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 
 import entities.Cell;
-import sgbd.prototype.Column;
+import entities.OperatorCell;
+import entities.TableCell;
 import sgbd.prototype.Prototype;
-import sgbd.prototype.RowData;
-import sgbd.query.Operator;
-import sgbd.table.SimpleTable;
 import sgbd.table.Table;
-import util.FindType;
+import util.ImportCSVFile;
 
+@SuppressWarnings("serial")
 public class ActionClass extends JFrame implements ActionListener {
 	
 	private mxGraph graph;
 	private mxGraphComponent graphComponent;
-	private Object newCellChild;
 	private Object newCell;
 	private Boolean createCell=false;
 	private String style;
 	private String name;
 	private Object cell;
+	private boolean isOperation;
 	
 	private Projecao tipoProjecao;
 	private Selecao tipoSelecao;
@@ -68,13 +62,6 @@ public class ActionClass extends JFrame implements ActionListener {
 	
 	private Prototype currentPrototype = null;
 	private Table currentTable = null;
-	
-	//private String inf;
-	private FormFrameProjecao formFrameProjecao;
-	private FormFrameSelecao formFrameSelecao;
-	private FormFrameJuncao formFrameJuncao;
-	
-	private Operator currentOperator;
 	
 	public ActionClass() {
 		super("Jgraph teste");
@@ -157,22 +144,21 @@ public class ActionClass extends JFrame implements ActionListener {
 		graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
+
 				cell = graphComponent.getCellAt(e.getX(), e.getY());
 				
 				if(createCell == true ) {
 
 					newCell = graph.insertVertex(parent,null, name, e.getX(), e.getY(), 80, 30,style);
 					
-					listCells.add(new Cell(name, style, newCell, currentTable, currentPrototype));
+					listCells.add(isOperation ? new OperatorCell(name, style, newCell) :
+												new TableCell(name, style, newCell, currentTable, currentPrototype));
 					
 					createCell = false;
 					
 				}
 				
 				if(cell != null) {
-					
-					System.out.println(((mxCell) cell).getValue().toString());
 					
 					if(createEdge == true && newParent == null) {
 						newParent = cell;
@@ -182,22 +168,17 @@ public class ActionClass extends JFrame implements ActionListener {
 						graph.insertEdge(newParent, null,"", newParent, cell);
 						((mxCell) cell).setParent((mxCell)newParent);
 						
-						Cell cellEntity = listCells.stream().filter(x -> x.getCell().equals(((mxCell)cell).getParent())).findFirst().orElse(null);
-						
 						if(style == "projecao") {
 							
-							formFrameProjecao = new FormFrameProjecao(cell, listCells, cellEntity.getPrototype(), cellEntity.getTable(), cellEntity.getOperator());
-							currentOperator = formFrameProjecao.getOperator();
+							new FormFrameProjecao(cell, listCells);
 							
 						}else if(style == "selecao") {
 							
-							formFrameSelecao = new FormFrameSelecao(cell, listCells, cellEntity.getPrototype(), cellEntity.getTable(), cellEntity.getOperator());
-							currentOperator = formFrameSelecao.getOperator();
+							new FormFrameSelecao(cell, listCells);
 							
 						}else if(style == "juncao") {
 							
 							//formFrameJuncao = new FormFrameJuncao(ps.get(0),ps.get(1),tables.get(0),tables.get(1));
-							currentOperator = formFrameJuncao.getOperator();
 							
 						}
 						
@@ -208,152 +189,72 @@ public class ActionClass extends JFrame implements ActionListener {
 				}
 
 				if(e.getButton() == MouseEvent.BUTTON3 && cell != null) {
+					
 					graph.getModel().remove(cell);	
 
+				}else if(e.getButton() == MouseEvent.BUTTON2 && cell != null) {
+					
+					Cell entityCell = listCells.stream().filter(x -> x.getCell().equals((mxCell)cell)).findFirst().orElse(null);
+					new ResultFrame(new JTextArea (entityCell != null ? entityCell.toString() : "NULO"));
+					
 				}
 				
 			}
 			
 		});
 		
-		
 		graph.getModel().endUpdate();
-		
-		
 			
 	}
 
-	private void assignVariables(String styleVar, String nameVar) {
+	private void assignVariables(String styleVar, String nameVar, boolean isOperation) {
 		
 		createCell = true;
 		newCell = null;
-		newCellChild = null;
 		newParent = null;
 		style = styleVar;
 		name = nameVar;
+		this.isOperation = isOperation;
 		
 	}
 	
-	private String importFile() {
-		
-		JFileChooser fileUpload = new JFileChooser();
-		//fileUpload.showOpenDialog(null);
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV files", "csv");
-		fileUpload.setFileFilter(filter);
-		
-		int res = fileUpload.showOpenDialog(null);
-		
-		if(res == JFileChooser.APPROVE_OPTION) {
-			
-			try(BufferedReader br = new BufferedReader(new FileReader(fileUpload.getSelectedFile().getAbsolutePath()))){
-				
-				String columnsName[] = br.readLine().replace("\"", "").replace(" ", "").split(",");
-				String fileName = fileUpload.getSelectedFile().getName().toUpperCase().substring(0, fileUpload.getSelectedFile().getName().indexOf("."));
-				
-				List<RowData> rows = new ArrayList<>();
-				
-				String line = br.readLine();
-				while(line != null) {
-					
-					String columns[] = line.split(",");
-					
-					RowData data = new RowData();
-					
-					int j = 0;
-					
-					for(String i : columns) {
-						
-						if(FindType.isInt(i)) {
-							
-							data.setInt(columnsName[j], Integer.parseInt(i));
-							
-						}else if(FindType.isFloat(i)) {
-							
-							data.setFloat(columnsName[j], Float.parseFloat(i));
-							
-						}else {
-							
-							data.setString(columnsName[j], i);
-							
-						}
-						
-						j++;
-						
-					}
-					
-					rows.add(data);
-					
-					line = br.readLine();
-				}
-				
-				List<String> columnsNameList1 = Arrays.asList(columnsName);
-				List<String> columnsNameList2 = new ArrayList<>(columnsNameList1);
-				
-				createTable(fileName, columnsNameList2, rows);
-				return fileName;
-				
-			}catch(IOException e) {
-				
-				e.printStackTrace();
-			
-			}
-			
-		}
-		
-		return null;
-		
-	}
+	
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == tipoProjecao.getButton()) {
-				assignVariables("projecao","π  projecao");
+				assignVariables("projecao","π  projecao", true);
 				
 			}else if(e.getSource() == tipoSelecao.getButton() ) {
-				assignVariables("selecao","σ  selecao");
+				assignVariables("selecao","σ  selecao", true);
 				
 			}else if(e.getSource() == tipoProdutoCartesiano.getButton()) {
-				assignVariables("produtoCartesiano","✕  produto cartesiano");
+				assignVariables("produtoCartesiano","✕  produto cartesiano", true);
 				
 			}else if(e.getSource() == tipoUniao.getButton()) {
-				assignVariables("uniao","∪  uniao");
+				assignVariables("uniao","∪  uniao", true);
 				
 			}else if(e.getSource() == tipoDiferenca.getButton()) {
-				assignVariables("diferenca","-  diferenca");
+				assignVariables("diferenca","-  diferenca", true);
 				
 			}else if(e.getSource() == tipoRenomeacao.getButton()) {
-				assignVariables("renomeacao","ρ  renomeacao");
+				assignVariables("renomeacao","ρ  renomeacao", true);
 				
 			}else if(e.getSource() == edgeButton) {
 				createEdge = true;
 				
 			}else if(e.getSource() == importButton) {
-				String name = importFile();
-				assignVariables("tabela", name);
+				ImportCSVFile.importCSVFile();
+				String name = ImportCSVFile.getFileName();
+				currentTable = ImportCSVFile.getTable();
+				currentPrototype = ImportCSVFile.getPrototype();
+				assignVariables("tabela", name, false);
 				
 			}else if(e.getSource() == tipoJuncao.getButton()) {
-				assignVariables("juncao","|X| juncao");
+				assignVariables("juncao","|X| juncao", true);
 
 			}
 			
 	}
-	
-	public void createTable(String fileName, List<String> columnsName, List<RowData> rows) {
-		currentPrototype = new Prototype();
-		
-		currentPrototype.addColumn(columnsName.get(0), 4, Column.PRIMARY_KEY);
-		columnsName.remove(0);
-		
-		// adiciona todas as colunas
-		columnsName.forEach(x -> {currentPrototype.addColumn(x, 100, Column.NONE);});
-		
-        currentTable = SimpleTable.openTable(fileName, currentPrototype);
-        currentTable.open();
-        rows.stream().forEach(x -> {currentTable.insert(x);});
-        
-        currentTable.open();
-        
-	}
-	
 	
 }

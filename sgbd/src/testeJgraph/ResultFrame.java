@@ -11,6 +11,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 
+@SuppressWarnings("serial")
 public class ResultFrame extends JFrame {
 
 	private JPanel contentPane;
