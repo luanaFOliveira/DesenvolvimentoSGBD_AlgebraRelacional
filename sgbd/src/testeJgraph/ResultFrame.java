@@ -1,28 +1,29 @@
 package testeJgraph;
 
 import java.awt.EventQueue;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.JScrollPane;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JTextArea;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.border.EmptyBorder;
 
 @SuppressWarnings("serial")
 public class ResultFrame extends JFrame {
 
 	private JPanel contentPane;
-	/**
-	 * Launch the application.
-	 */
-	public static void main(JTextArea textArea) {
+	private JTable table;
+	
+	public static void main(List<List<String>> data) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					ResultFrame frame = new ResultFrame(textArea);
+					ResultFrame frame = new ResultFrame(data);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -31,19 +32,30 @@ public class ResultFrame extends JFrame {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
-	public ResultFrame(JTextArea textArea) {
-		this.setVisible(true);
-
+	public ResultFrame(List<List<String>> data) {
+		
+		List<String> columnsName = new ArrayList<>();
+		
+		if(!data.isEmpty()) {
+			columnsName = data.get(0);
+			data.remove(0);
+		}
+		
+		String[][] dataArray = data.stream()
+                .map(l -> l.stream().toArray(String[]::new))
+                .toArray(String[][]::new);;
+                
+        String[] columnsNameArray = columnsName.stream().toArray(String[]::new);        
+		
+		table = new JTable(dataArray, columnsNameArray);
+		
 		setBounds(100, 100, 450, 385);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
 		setContentPane(contentPane);
 		
-		JScrollPane scrollPane = new JScrollPane();
+		JScrollPane scrollPane = new JScrollPane(table);
 		
 		JLabel lblNewLabel = new JLabel("Resultado");
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
@@ -66,8 +78,8 @@ public class ResultFrame extends JFrame {
 		);
 		
 		//textArea = new JTextArea();
-		scrollPane.setViewportView(textArea);
 		contentPane.setLayout(gl_contentPane);
+		this.setVisible(true);
 	}
 
 }

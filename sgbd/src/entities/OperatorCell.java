@@ -8,11 +8,12 @@ import sgbd.prototype.ComplexRowData;
 import sgbd.query.Operator;
 import sgbd.query.Tuple;
 import sgbd.table.Table;
+import util.TableFormat;
 
 public class OperatorCell extends Cell{
 
 	private Operator operator;
-	private String content;
+	private List<List<String>> content;
 	
 	public OperatorCell(String name, String style, Object cell) {
 	
@@ -30,43 +31,11 @@ public class OperatorCell extends Cell{
 	
 	private void setContent() {
 		
-		StringBuilder sb = new StringBuilder();
-		Operator aux = this.operator;
-		aux.open();
-	    while(aux.hasNext()){
-	        Tuple t = aux.next();
-	        String str = "";
-	        for (Map.Entry<String, ComplexRowData> row: t){
-	            for(Map.Entry<String,byte[]> data:row.getValue()) {
-	            	switch(data.getKey()){
-	            		
-		            	case "Name":
-		            	case "Sex":
-		            	case "Team":
-		            	case "Position":	
-		            		//str+=row.getValue().getString(data.getKey());
-			            	sb.append(row.getValue().getString(data.getKey()));
-		            		break;
-		            	default:
-		            		//str+=row.getValue().getInt(data.getKey());
-			            	sb.append(row.getValue().getInt(data.getKey()).toString());
-		            		break;
-
-	            	}
-	            	sb.append(" | ");
-	            	//str+=" | ";
-	            }
-	            sb.append("\n");
-	        }
-	        System.out.println(str);
-			//textArea.setText(str);
-	    }
-	    
-	    this.content = sb.toString();
+	    this.content = TableFormat.getRows(operator);
 	    
 	}
 	
-	private String getContent() {
+	public List<List<String>> getContent() {
 
 		return content;
 	
@@ -103,11 +72,4 @@ public class OperatorCell extends Cell{
 		
 	}
 	
-	@Override
-	public String toString() {
-		
-        return getContent();
-		
-	}
-
 }

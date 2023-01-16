@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
+<<<<<<< HEAD
+	<name>FyDatabase-Java-main.zip_expanded</name>
+=======
 	<name>jgraph-funcionando</name>
+>>>>>>> 1ba84d3 (JTable para mostrar tabela)
 	<comment></comment>
 	<projects>
 	</projects>
 	<buildSpec>
+<<<<<<< HEAD
+	</buildSpec>
+	<natures>
+=======
 		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
 			<arguments>
@@ -13,5 +21,6 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
+>>>>>>> 1ba84d3 (JTable para mostrar tabela)
 	</natures>
 </projectDescription>

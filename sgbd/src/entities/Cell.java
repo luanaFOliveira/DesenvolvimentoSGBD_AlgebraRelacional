@@ -33,7 +33,7 @@ public abstract class Cell {
 
 	public abstract Operator getData();
 	public abstract List<String> getColumns();
-	public abstract String toString();
 	public abstract Table getTable();
+	public abstract List<List<String>> getContent();
 	
 }

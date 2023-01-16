@@ -13,7 +13,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
@@ -77,7 +76,6 @@ public class ActionClass extends JFrame implements ActionListener {
 		graphComponent.setPreferredSize(new Dimension(400,400));
 		getContentPane().add(graphComponent);
 		
-		
 	    JPanel containerPanel = new JPanel(new GridLayout(8, 1));
 	    mxStylesheet stylesheet = graph.getStylesheet();
 	    
@@ -110,7 +108,6 @@ public class ActionClass extends JFrame implements ActionListener {
 	    tipoJuncao.getButton().addActionListener(this);
 	    containerPanel.add(tipoJuncao.getPanel());
 
-	    
 	    edgeButton = new JButton("Edge");
 	    edgeButton.setBounds(600, 300, 100, 50);
 	    edgeButton.addActionListener(this);
@@ -126,11 +123,9 @@ public class ActionClass extends JFrame implements ActionListener {
 		importButton.setHorizontalAlignment(SwingConstants.LEFT);
 		importButton.addActionListener(this);
 	    
-	    
 		this.add(containerPanel,BorderLayout.EAST);
 
 		setVisible(true);
-	
 		
 		Object parent = graph.getDefaultParent();
 		graph.getModel().beginUpdate();
@@ -186,6 +181,8 @@ public class ActionClass extends JFrame implements ActionListener {
 						createEdge = false;
 						
 					}
+					//Cell entityCell = listCells.stream().filter(x -> x.getCell().equals((mxCell)cell)).findFirst().orElse(null);
+					//OperatorToTable.converter(new ProjectionOperator(entityCell.getTable(), entityCell.getColumns()), Arrays.asList(1));
 				}
 
 				if(e.getButton() == MouseEvent.BUTTON3 && cell != null) {
@@ -195,7 +192,7 @@ public class ActionClass extends JFrame implements ActionListener {
 				}else if(e.getButton() == MouseEvent.BUTTON2 && cell != null) {
 					
 					Cell entityCell = listCells.stream().filter(x -> x.getCell().equals((mxCell)cell)).findFirst().orElse(null);
-					new ResultFrame(new JTextArea (entityCell != null ? entityCell.toString() : "NULO"));
+					new ResultFrame(entityCell.getContent());
 					
 				}
 				
@@ -217,8 +214,6 @@ public class ActionClass extends JFrame implements ActionListener {
 		this.isOperation = isOperation;
 		
 	}
-	
-	
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
