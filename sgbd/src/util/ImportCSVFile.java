@@ -77,6 +77,8 @@ public class ImportCSVFile {
 				List<String> columnsNameList1 = Arrays.asList(columnsName);
 				List<String> columnsNameList2 = new ArrayList<>(columnsNameList1);
 				
+				System.out.println(rows.toString());
+				
 				createTable(currentFileName, columnsNameList2, rows);
 				
 			}catch(IOException e) {

@@ -45,6 +45,11 @@ public class TableFormat {
 		            	case "Sex":
 		            	case "Team":
 		            	case "Position":
+		            	case "JobTitle":
+		            	case "Dateofbirth":
+		            	case "FirstName":
+		            	case "LastName":
+		            	case "Phone":	
 			            	row.add(line.getValue().getString(data.getKey()));
 		            		break;
 		            	default:
