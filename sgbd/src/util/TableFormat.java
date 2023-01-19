@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import entities.Cell;
 import sgbd.prototype.ComplexRowData;
 import sgbd.query.Operator;
 import sgbd.query.Tuple;
 
 public class TableFormat {
 
-	public static List<List<String>> getRows(Operator operator) {
+	public static List<List<String>> getRows(Cell cell, Operator operator) {
 		
 		Operator aux = operator;
 		aux.open();
 		
 		List<List<String>> rows = new ArrayList<>();
 		List<String> columnsName = new ArrayList<>();
-		
 		
 		Tuple a = aux.hasNext() ? aux.next() : null;
 		
@@ -39,22 +39,16 @@ public class TableFormat {
 	    		
 	            for(Map.Entry<String,byte[]> data:line.getValue()) {
 	            	
-	            	switch(data.getKey()){
+	            	if(data.getKey().contains("Name") || data.getKey().contains("Sex") || data.getKey().contains("Team") ||
+	            			data.getKey().contains("Position") || data.getKey().contains("JobTitle") || data.getKey().contains("Dateofbirth") ||
+	            			data.getKey().contains("Phone")){
 	            		
-		            	case "Name":
-		            	case "Sex":
-		            	case "Team":
-		            	case "Position":
-		            	case "JobTitle":
-		            	case "Dateofbirth":
-		            	case "FirstName":
-		            	case "LastName":
-		            	case "Phone":	
-			            	row.add(line.getValue().getString(data.getKey()));
-		            		break;
-		            	default:
-			            	row.add(line.getValue().getInt(data.getKey()).toString());
-		            		break;
+			         
+	            		row.add(line.getValue().getString(data.getKey()));
+	            	
+	            	}else {
+			        
+	            		row.add(line.getValue().getInt(data.getKey()).toString());
 
 	            	}
 	        

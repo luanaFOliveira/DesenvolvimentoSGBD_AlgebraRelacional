@@ -52,16 +52,18 @@ public class ImportCSVFile {
 					for(String i : columns) {
 						
 						if(FindType.isInt(i)) {
-							
-							data.setInt(columnsName[j], Integer.parseInt(i));
-							
+							if(columnsName[j].contains("Id")) {
+								data.setInt(columnsName[j], Integer.parseInt(i));
+							}else {
+								data.setInt(columnsName[j]+"."+currentFileName, Integer.parseInt(i));
+							}
 						}else if(FindType.isFloat(i)) {
 							
-							data.setFloat(columnsName[j], Float.parseFloat(i));
+							data.setFloat(columnsName[j]+"."+currentFileName, Float.parseFloat(i));
 							
 						}else {
 							
-							data.setString(columnsName[j], i);
+							data.setString(columnsName[j]+"."+currentFileName, i);
 							
 						}
 						
@@ -74,12 +76,17 @@ public class ImportCSVFile {
 					line = br.readLine();
 				}
 				
-				List<String> columnsNameList1 = Arrays.asList(columnsName);
-				List<String> columnsNameList2 = new ArrayList<>(columnsNameList1);
+				List<String> columnsNameList = new ArrayList<>(Arrays.asList(columnsName));
 				
-				System.out.println(rows.toString());
+				for(int i = 1; i < columnsNameList.size(); i++) {
 				
-				createTable(currentFileName, columnsNameList2, rows);
+					String test = columnsNameList.get(i);
+					columnsNameList.remove(i);
+					columnsNameList.add(i, test.concat("."+currentFileName));
+					
+				}
+				
+				createTable(currentFileName, columnsNameList, rows);
 				
 			}catch(IOException e) {
 				
@@ -92,18 +99,25 @@ public class ImportCSVFile {
 	}
 
 	public static void createTable(String name, List<String> columnsName, List<RowData> rows) {
+		
 		currentPrototype = new Prototype();
 		
-		currentPrototype.addColumn(columnsName.get(0), 4, Column.PRIMARY_KEY);
-		columnsName.remove(0);
+		int index = -1;
+		for(int i = 0; i < columnsName.size(); i++) {
+			
+			if(columnsName.get(i).contains("Id") && index < 0) index = i;
+			
+		}
+		
+		currentPrototype.addColumn(columnsName.get(index), 4, Column.PRIMARY_KEY);
+		columnsName.remove(index);
+		while(columnsName.contains("Id")) columnsName.remove(columnsName.indexOf("Id"));
 		
 		columnsName.forEach(x -> {currentPrototype.addColumn(x, 100, Column.NONE);});
 		
 	    currentTable = SimpleTable.openTable(name, currentPrototype);
 	    currentTable.open();
 	    rows.stream().forEach(x -> {currentTable.insert(x);});
-	    
-	    currentTable.open();
 	    
 	}
 	

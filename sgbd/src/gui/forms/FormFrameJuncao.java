@@ -22,7 +22,6 @@ import entities.Cell;
 import entities.OperatorCell;
 import sgbd.query.Operator;
 import sgbd.query.binaryop.BlockNestedLoopJoin;
-import sgbd.query.binaryop.NestedLoopJoin;
 import sgbd.query.sourceop.TableScan;
 
 @SuppressWarnings("serial")
@@ -146,7 +145,6 @@ public class FormFrameJuncao extends JFrame implements ActionListener {
 		Operator operator = new BlockNestedLoopJoin(table_1,table_2,(t1, t2) -> {
             return t1.getContent(parentCell1.getName()).getInt(item1) == t2.getContent(parentCell2.getName()).getInt(item2);
         });
-		
 		
 		operator.open();
 		    

@@ -37,17 +37,23 @@ public class ResultFrame extends JFrame {
 		List<String> columnsName = new ArrayList<>();
 		
 		if(!data.isEmpty()) {
+			
 			columnsName = data.get(0);
-			data.remove(0);
+			List<String> firstLine = new ArrayList<>(data.remove(0));
+		
+			String[][] dataArray = data.stream()
+	                .map(l -> l.stream().toArray(String[]::new))
+	                .toArray(String[][]::new);;
+	                
+	        data.add(0, firstLine);        
+	                
+	        String[] columnsNameArray = columnsName.stream().toArray(String[]::new); 
+	        
+			
+			
+			table = new JTable(dataArray, columnsNameArray);
+		
 		}
-		
-		String[][] dataArray = data.stream()
-                .map(l -> l.stream().toArray(String[]::new))
-                .toArray(String[][]::new);;
-                
-        String[] columnsNameArray = columnsName.stream().toArray(String[]::new);        
-		
-		table = new JTable(dataArray, columnsNameArray);
 		
 		setBounds(100, 100, 1400, 385);
 		contentPane = new JPanel();
