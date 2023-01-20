@@ -38,7 +38,7 @@ public class TableCell extends Cell{
 	
 	public List<List<String>> getContent(){
 		
-		return TableFormat.getRows(this, new TableScan(table, getColumns()));
+		return TableFormat.getRows(new TableScan(table, getColumns()));
 		
 	}
 	

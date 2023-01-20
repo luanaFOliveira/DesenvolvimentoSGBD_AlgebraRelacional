@@ -22,7 +22,7 @@ import entities.Cell;
 import entities.OperatorCell;
 import sgbd.query.Operator;
 import sgbd.query.binaryop.BlockNestedLoopJoin;
-import sgbd.query.sourceop.TableScan;
+import util.TableFormat;
 
 @SuppressWarnings("serial")
 public class FormFrameJuncao extends JFrame implements ActionListener {
@@ -139,8 +139,8 @@ public class FormFrameJuncao extends JFrame implements ActionListener {
 
 	public void executeOperation(String item1, String item2) {
 		
-		Operator table_1 = new TableScan(parentCell1.getTable(), columnsList_1);
-		Operator table_2 = new TableScan(parentCell2.getTable(), columnsList_2);
+		Operator table_1 = parentCell1.getData();
+		Operator table_2 = parentCell2.getData();
 		
 		Operator operator = new BlockNestedLoopJoin(table_1,table_2,(t1, t2) -> {
             return t1.getContent(parentCell1.getName()).getInt(item1) == t2.getContent(parentCell2.getName()).getInt(item2);
@@ -148,7 +148,7 @@ public class FormFrameJuncao extends JFrame implements ActionListener {
 		
 		operator.open();
 		    
-		((OperatorCell) cell).setOperator(operator);
+	    ((OperatorCell) cell).setOperator(operator, TableFormat.getRows(operator));
 		    
 	    operator.close();
 			

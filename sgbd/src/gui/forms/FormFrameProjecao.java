@@ -23,7 +23,9 @@ import com.mxgraph.model.mxCell;
 import entities.Cell;
 import entities.OperatorCell;
 import sgbd.query.Operator;
-import sgbd.query.unaryop.ProjectionOperator;
+import sgbd.query.unaryop.FilterColumnsOperator;
+import sgbd.table.Table;
+import util.TableFormat;
 
 @SuppressWarnings("serial")
 public class FormFrameProjecao extends JFrame implements ActionListener {
@@ -107,7 +109,7 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 				.addGroup(groupLayout.createSequentialGroup()
 					.addGap(38)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(columnsComboBox, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE)
+						.addComponent(columnsComboBox, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblColumns, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnAdd, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnPronto)
@@ -145,7 +147,7 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		
 		if(e.getSource() == btnAdd){
-			//quando tu clica em adicionar, ele adiciona nos termos e dai tira a coluna q foi usada
+
 			if(columnsComboBox.getItemCount() > 0) {
 				textTermos = textArea.getText() + "\n" +columnsComboBox.getSelectedItem().toString() ;
 				columnsComboBox.removeItemAt(columnsComboBox.getSelectedIndex());
@@ -165,11 +167,20 @@ public class FormFrameProjecao extends JFrame implements ActionListener {
 	
 	public void executeOperation(List<String> columnsResult) {
 		
-        Operator operator = new ProjectionOperator(parentCell.getTable(), columnsResult);
-
+		List<String> aux = parentCell.getColumns();
+		aux.removeAll(columnsResult);
+		
+		Operator operator = parentCell.getData();
+		
+		for(Table table : parentCell.getData().getSources()) {
+			
+			operator = new FilterColumnsOperator(operator, table.getTableName(), aux);
+		
+		}
+		
 	    operator.open();
 	    
-	    ((OperatorCell) cell).setOperator(operator);
+	    ((OperatorCell) cell).setOperator(operator, TableFormat.getRows(operator));
 	    
         operator.close();
 		

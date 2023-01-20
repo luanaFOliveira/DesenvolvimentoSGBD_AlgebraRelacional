@@ -8,17 +8,12 @@ import enums.OperationEnums;
 import sgbd.prototype.ComplexRowData;
 import sgbd.query.Operator;
 import sgbd.query.Tuple;
-import sgbd.query.sourceop.TableScan;
-import sgbd.table.Table;
-import util.OperatorToTable;
-import util.TableFormat;
 
 public class OperatorCell extends Cell{
 
 	private Operator operator;
 	private List<List<String>> content;
 	private OperationEnums type;
-	private Table table;
 	
 	public OperatorCell(String name, String style, Object cell, OperationEnums type) {
 	
@@ -28,18 +23,11 @@ public class OperatorCell extends Cell{
 		
 	}
 	
-	public void setOperator(Operator operator) {
+	public void setOperator(Operator operator, List<List<String>> result) {
 		
 		this.operator = operator;
-		this.table = OperatorToTable.convert(this, operator);
-		setContent();
+		this.content = result;
 		
-	}
-	
-	private void setContent() {
-		
-	    this.content = TableFormat.getRows(this, operator);
-	    
 	}
 	
 	public List<List<String>> getContent() {
@@ -71,15 +59,9 @@ public class OperatorCell extends Cell{
 		
 	}
 	
-	public Table getTable() {
-		
-		return table;
-		
-	}
-	
 	public Operator getData() {
 		
-		return new TableScan(getTable(), getColumns());
+		return operator;
 		
 	}
 	

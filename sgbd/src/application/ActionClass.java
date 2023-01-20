@@ -169,7 +169,6 @@ public class ActionClass extends JFrame implements ActionListener {
 				
 				if(jCell != null) {
 					
-					System.out.println(cell.getParents().toString());
 					if(createEdge == true && newParent == null) {
 						newParent = jCell;
 					}

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sgbd.query.Operator;
-import sgbd.table.Table;
 
 public abstract class Cell {
 	
@@ -54,7 +53,6 @@ public abstract class Cell {
 
 	public abstract Operator getData();
 	public abstract List<String> getColumns();
-	public abstract Table getTable();
 	public abstract List<List<String>> getContent();
 	
 }

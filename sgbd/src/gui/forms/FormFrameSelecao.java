@@ -24,6 +24,7 @@ import entities.OperatorCell;
 import sgbd.query.Operator;
 import sgbd.query.Tuple;
 import sgbd.query.unaryop.FilterOperator;
+import util.TableFormat;
 
 
 @SuppressWarnings("serial")
@@ -162,7 +163,7 @@ public class FormFrameSelecao extends JFrame implements ActionListener {
 
 	    operator.open();
 	    
-	    ((OperatorCell) cell).setOperator(operator);
+	    ((OperatorCell) cell).setOperator(operator, TableFormat.getRows(operator));
 	    
         operator.close();
 		
