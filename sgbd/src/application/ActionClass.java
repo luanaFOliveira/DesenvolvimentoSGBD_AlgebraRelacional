@@ -5,12 +5,13 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -27,43 +28,44 @@ import com.mxgraph.view.mxStylesheet;
 import entities.Cell;
 import entities.OperatorCell;
 import entities.TableCell;
-import enums.OperationEnums;
+import enums.OperationType;
 import enums.OperationTypeEnums;
-import gui.ResultFrame;
 import gui.buttons.TypesButtons;
-import gui.forms.FormFrameJuncao;
-import gui.forms.FormFrameProjecao;
-import gui.forms.FormFrameProjecao2;
-import gui.forms.FormFrameSelecao;
-import sgbd.prototype.Prototype;
-import sgbd.table.Table;
-import util.ImportCSVFile;
+import gui.frames.ResultFrame;
+import gui.frames.forms.FormFrameCreateTable;
+import gui.frames.forms.FormFrameExportTable;
+import gui.frames.forms.FormFrameImportFile;
+import gui.frames.forms.operations.FormFrameJuncao;
+import gui.frames.forms.operations.FormFrameProdutoCartesiano;
+import gui.frames.forms.operations.FormFrameProjecao;
+import gui.frames.forms.operations.FormFrameSelecao;
 import util.ExportTable;
 
 @SuppressWarnings("serial")
-public class ActionClass extends JFrame implements ActionListener{
+public class ActionClass extends JFrame implements ActionListener, MouseListener, KeyListener{
 	
 	private mxGraph graph;
 	private mxGraphComponent graphComponent;
 	private JPanel containerPanel;
+	private Object parent;
 	private Object newCell;
 	private Boolean createCell=false;
 	private String style;
 	private String name;
 	private Object jCell;
 	private Boolean isOperation;
-	private OperationEnums currentType;
+	private OperationType currentType;
 	
 	private TypesButtons tipoProjecao;
 	private TypesButtons tipoSelecao;
 	private TypesButtons tipoProdutoCartesiano;
-	private TypesButtons tipoUniao;
-	private TypesButtons tipoDiferenca;
-	private TypesButtons tipoRenomeacao;
+	//private TypesButtons tipoUniao;
+	//private TypesButtons tipoDiferenca;
+	//private TypesButtons tipoRenomeacao;
 	private TypesButtons tipoJuncao;
 	
 	private Object newParent;
-	private JPanel edgePanel;
+	//private JPanel edgePanel;
 	
 	private JButton edgeButton;
 	private Boolean createEdge=false;
@@ -81,9 +83,8 @@ public class ActionClass extends JFrame implements ActionListener{
 	private List<Cell> cells;
 	private List<Cell> leafs;
 	
-	private Prototype currentPrototype = null;
-	private Table currentTable = null;
-	
+	private TableCell currentTableCell = null;
+	private JButton btnCreateTable;
 	
 	public ActionClass() {
 		super("Jgraph teste");
@@ -99,9 +100,8 @@ public class ActionClass extends JFrame implements ActionListener{
 		graphComponent.setPreferredSize(new Dimension(400,400));
 		getContentPane().add(graphComponent);
 		
-	    containerPanel = new JPanel(new GridLayout(3, 1));
+	    containerPanel = new JPanel(new GridLayout(4, 1));
 	    mxStylesheet stylesheet = graph.getStylesheet();
-	    
 	    
 	    tipoProjecao = new TypesButtons(stylesheet,"π Projecao","projecao");
 	    tipoProjecao.getButton().addActionListener(this);
@@ -115,11 +115,11 @@ public class ActionClass extends JFrame implements ActionListener{
 	    tipoJuncao.getButton().addActionListener(this);
 	    containerPanel.add(tipoJuncao.getPanel());
 	    
-	    /*
+	    
 	    tipoProdutoCartesiano = new TypesButtons(stylesheet,"✕ Produto Cartesiano","produtoCartesiano");
 	    tipoProdutoCartesiano.getButton().addActionListener(this);
 	    containerPanel.add(tipoProdutoCartesiano.getPanel());
-	    
+	    /*
 	    tipoUniao = new TypesButtons(stylesheet,"∪ Uniao","uniao");
 	    tipoUniao.getButton().addActionListener(this);
 	    containerPanel.add(tipoUniao.getPanel());
@@ -133,7 +133,6 @@ public class ActionClass extends JFrame implements ActionListener{
 	    containerPanel.add(tipoRenomeacao.getPanel());
 	    */
 	    
-	    
 		toolBar = new JToolBar();
 		getContentPane().add(toolBar, BorderLayout.SOUTH);
 	    
@@ -141,6 +140,11 @@ public class ActionClass extends JFrame implements ActionListener{
 		toolBar.add(importButton);
 		importButton.setHorizontalAlignment(SwingConstants.LEFT);
 		importButton.addActionListener(this);
+		
+		btnCreateTable = new JButton("Criar tabela");
+		toolBar.add(btnCreateTable);
+		btnCreateTable.setHorizontalAlignment(SwingConstants.LEFT);
+		btnCreateTable.addActionListener(this);
 		
 		edgeButton = new JButton("Edge");
 		toolBar.add(edgeButton);
@@ -152,27 +156,18 @@ public class ActionClass extends JFrame implements ActionListener{
 		deleteButton.setHorizontalAlignment(SwingConstants.LEFT);
 		deleteButton.addActionListener(this);
 		
-		saveTableButton = new JButton("Salvar tabela");
+		saveTableButton = new JButton("Exportar");
 		toolBar.add(saveTableButton);
 		saveTableButton.setHorizontalAlignment(SwingConstants.LEFT);
 		saveTableButton.addActionListener(this);
 		
-		saveImageButton = new JButton("Salvar imagem");
-		toolBar.add(saveImageButton);
-		saveImageButton.setHorizontalAlignment(SwingConstants.LEFT);
-		saveImageButton.addActionListener(this);
-		
-		saveGraphButton = new JButton("Salvar arvore");
-		toolBar.add(saveGraphButton);
-		saveGraphButton.setHorizontalAlignment(SwingConstants.LEFT);
-		saveGraphButton.addActionListener(this);
 		
 	    
 		this.add(containerPanel,BorderLayout.EAST);
 
 		setVisible(true);
 		
-		Object parent = graph.getDefaultParent();
+		parent = graph.getDefaultParent();
 		graph.getModel().beginUpdate();
 		
 		mxHierarchicalLayout layout = new mxHierarchicalLayout(graph);
@@ -182,123 +177,15 @@ public class ActionClass extends JFrame implements ActionListener{
 		this.cells = new ArrayList<>();
 		this.leafs = new ArrayList<>();
 		
-		graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-
-				jCell = graphComponent.getCellAt(e.getX(), e.getY());
-				Cell cell = cells.stream().filter(x -> x.getCell().equals((mxCell)jCell)).findFirst().orElse(null);
-				
-				if(createCell == true ) {
-
-					newCell = graph.insertVertex(parent,null, name, e.getX(), e.getY(), 80, 30,style);
-					
-					
-					cells.add(isOperation ? new OperatorCell(name, style, newCell, currentType,e.getX(),e.getY(),80,30) :
-												new TableCell(name, style, newCell, currentTable, currentPrototype,e.getX(),e.getY(),80,30));
-				
-					System.out.println("x: "+e.getX() +" y: "+ e.getY()+"\n");
-					//if(!isOperation ) leafs.add(new TableCell(name, style, newCell, currentTable, currentPrototype));
-					
-					createCell = false;
-					
-				}
-				
-				if(jCell != null) {
-					
-					if(createEdge == true && newParent == null) {
-						newParent = jCell;
-					}
-					
-					Cell parentCell = newParent != null ? cells.stream().filter(x -> x.getCell().equals((mxCell)newParent)).findFirst().orElse(null) : null;
-					
-					if( createEdge == true && jCell != newParent) {
-						
-						graph.insertEdge(newParent, null,"", newParent, jCell);
-						((mxCell) jCell).setParent((mxCell)newParent);
-						
-						cell.addParent(parentCell);
-						
-						if(parentCell != null) parentCell.setChild(cell);
-						
-						if(cell instanceof OperatorCell) {
-							
-							if(((OperatorCell)cell).getType() == OperationEnums.PROJECAO && cell.checkRules(OperationTypeEnums.UNARIA) == true) new FormFrameProjecao2(jCell, cells,leafs);
-								
-							else if(((OperatorCell)cell).getType() == OperationEnums.SELECAO && cell.checkRules(OperationTypeEnums.UNARIA) == true) new FormFrameSelecao(jCell, cells);
-								
-							else if(((OperatorCell)cell).getType() == OperationEnums.JUNCAO && cell.checkRules(OperationTypeEnums.BINARIA) == true) new FormFrameJuncao(jCell, cells);
-							
-						}
-						leafs.add(cell);
-						leafs.remove(parentCell.getCell());
-
-						/*
-						Cell stCell = jCell != null ? leafs.stream().filter(x -> x.getCell().equals((mxCell)jCell)).findFirst().orElse(null) : null;
-						Cell reCell = stCell.getParents().get(0);
-						
-						
-						System.out.println("stay cell :"+stCell.getName() );
-						System.out.println("remove cell:"+reCell.getName() );
-						System.out.println("before remove:"+ leafs.get(0).getName());
-						
-						leafs.remove(reCell);
-						//cells.remove(reCell);
-						System.out.println("after remove:"+ leafs.get(0).getName());
-*/
-						
-						newParent = null;
-						createEdge = false;
-						
-					}
-					
-					if(deleteCell == true) {
-						
-						graph.getModel().remove(jCell);	
-						deleteCell = false;
-						
-					}
-				}
-
-				if(e.getButton() == MouseEvent.BUTTON3 && jCell != null) {
-					
-					graph.getModel().remove(jCell);	
-
-				}
-				if(e.getButton() == MouseEvent.BUTTON2 && jCell != null) {
-					
-					cell.getSourceTableName(name);
-					
-				}
-				
-			}
-			
-		});
+		graphComponent.getGraphControl().addMouseListener(this);
 		
-		graphComponent.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				
-				Cell cell = jCell != null ? cells.stream().filter(x -> x.getCell().equals((mxCell)jCell)).findFirst().orElse(null) : null;
-				
-				if (e.getKeyCode() == KeyEvent.VK_S && jCell != null) {
-					new ResultFrame(cell.getContent());
-				
-				}else if(e.getKeyCode() == KeyEvent.VK_DELETE && jCell != null) {
-					
-					graph.getModel().remove(jCell);	
-				
-				}
-				
-			}
-			
-		});
+		graphComponent.addKeyListener(this);
 		
 		graph.getModel().endUpdate();
 			
 	}
 
-	private void assignVariables(String styleVar, String nameVar, boolean isOperation, OperationEnums currentType) {
+	private void assignVariables(String styleVar, String nameVar, boolean isOperation, OperationType currentType) {
 		
 		createCell = true;
 		newCell = null;
@@ -314,51 +201,232 @@ public class ActionClass extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		
 		if(e.getSource() == tipoProjecao.getButton()) {
-			assignVariables("projecao","π  projecao", true, OperationEnums.PROJECAO);
+			
+			assignVariables("projecao","π  projecao", true, OperationType.PROJECAO);
 			
 		}else if(e.getSource() == tipoSelecao.getButton() ) {
-			assignVariables("selecao","σ  selecao", true, OperationEnums.SELECAO);
 			
-		}/*else if(e.getSource() == tipoProdutoCartesiano.getButton()) {
-			assignVariables("produtoCartesiano","✕  produto cartesiano", true, OperationEnums.PRODUTO_CARTESIANO);
+			assignVariables("selecao","σ  selecao", true, OperationType.SELECAO);
 			
-		}else if(e.getSource() == tipoUniao.getButton()) {
-			assignVariables("uniao","∪  uniao", true, OperationEnums.UNIAO);
+		}else if(e.getSource() == tipoProdutoCartesiano.getButton()) {
+			
+			assignVariables("produtoCartesiano","✕  produto cartesiano", true, OperationType.PRODUTO_CARTESIANO);
+			
+		}/*else if(e.getSource() == tipoUniao.getButton()) {
+			
+			assignVariables("uniao","∪  uniao", true, OperationType.UNIAO);
 			
 		}else if(e.getSource() == tipoDiferenca.getButton()) {
-			assignVariables("diferenca","-  diferenca", true, OperationEnums.DIFERENCA);
+			
+			assignVariables("diferenca","-  diferenca", true, OperationType.DIFERENCA);
 			
 		}else if(e.getSource() == tipoRenomeacao.getButton()) {
-			assignVariables("renomeacao","ρ  renomeacao", true, OperationEnums.RENOMEACAO);
+			
+			assignVariables("renomeacao","ρ  renomeacao", true, OperationType.RENOMEACAO);
 			
 		}*/else if(e.getSource() == tipoJuncao.getButton()) {
-			assignVariables("juncao","|X| juncao", true, OperationEnums.JUNCAO);
+			
+			assignVariables("juncao","|X| juncao", true, OperationType.JUNCAO);
 
 		}else if(e.getSource() == edgeButton) {
+			
 			createEdge = true;
 			
 		}else if(e.getSource() == deleteButton) {
+			
 			deleteCell = true;
 			
 		}else if(e.getSource() == importButton) {
-			ImportCSVFile.importCSVFile();
-			String name = ImportCSVFile.getFileName();
-			currentTable = ImportCSVFile.getTable();
-			currentPrototype = ImportCSVFile.getPrototype();
-			assignVariables("tabela", name, false, null);
 			
-		}else if(e.getSource() == saveTableButton) {	
-			ExportTable.exportToCsv(cells.get(cells.size()-1).getContent(),"finalTable.csv");
+			TableCell tableCell = new TableCell(80, 30);
 			
-		}else if(e.getSource() == saveImageButton) {
-			ExportTable.exportToImage(this);
+			Boolean deleteCell = false;
+			AtomicReference<Boolean> deleteCellReference = new AtomicReference<>(deleteCell);
 			
-		}else if(e.getSource() == saveGraphButton) {
-			ExportTable.saveGraph(cells, "GraphContent.csv");
+			new FormFrameImportFile(tableCell, deleteCellReference);
+			
+			if(!deleteCellReference.get()) {
+				
+				assignVariables(tableCell.getStyle(), tableCell.getName(), false, null);
+				currentTableCell = tableCell;
+			
+			}else {
+				
+				tableCell = null;
+				
+			}
+			
+		}else if(e.getSource() == btnCreateTable) {
+			
+			TableCell tableCell = new TableCell(80, 30);
+			
+			Boolean deleteCell = false;
+			AtomicReference<Boolean> deleteCellReference = new AtomicReference<>(deleteCell);
+			
+			new FormFrameCreateTable(tableCell, deleteCellReference);
+			
+			if(!deleteCellReference.get()) {
+				
+				assignVariables(tableCell.getStyle(), tableCell.getName(), false, null);
+				currentTableCell = tableCell;
+				
+			}else {
+				
+				tableCell = null;
+				
+			}
+			
+		}else if(e.getSource() == saveTableButton) {
+			
+			Boolean deleteCell = false;
+			AtomicReference<Boolean> deleteCellReference = new AtomicReference<>(deleteCell);
+
+			new FormFrameExportTable(deleteCellReference,cells,this,cells.get(cells.size()-1).getContent());
 			
 		}
 			
 	}
-	
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
 		
+		if(currentTableCell == null) {
+			return;
+		}
+		
+		jCell = graphComponent.getCellAt(e.getX(), e.getY());
+		Cell cell = cells.stream().filter(x -> x.getCell().equals((mxCell)jCell)).findFirst().orElse(null);
+		
+		if(createCell == true ) {
+
+			newCell = graph.insertVertex(parent, null, name, e.getX(), e.getY(), 80, 30, style);
+			
+			if(!isOperation) {
+				
+				currentTableCell.setJGraphCell(newCell);
+				cells.add(currentTableCell);
+				currentTableCell.setX(e.getX());
+				currentTableCell.setY(e.getY());
+			
+			}else {
+				
+				cells.add(new OperatorCell(name, style, newCell, currentType, e.getX(), e.getY(), 80, 30));
+				
+			}
+			
+			createCell = false;
+			
+		}
+		
+		if(jCell != null) {
+			graph.getModel().getValue(jCell);
+			
+			if(createEdge == true && newParent == null) {
+				newParent = jCell;
+			}
+			
+			Cell parentCell = newParent != null ? cells.stream().filter(x -> x.getCell().equals((mxCell)newParent)).findFirst().orElse(null) : null;
+
+			if( createEdge == true && jCell != newParent) {
+				
+				graph.insertEdge(newParent, null,"", newParent, jCell);
+				((mxCell) jCell).setParent((mxCell)newParent);
+				
+				cell.addParent(parentCell);
+				
+				if(parentCell != null) parentCell.setChild(cell);
+
+				if(cell instanceof OperatorCell) {
+					
+					if(((OperatorCell)cell).getType() == OperationType.PROJECAO && cell.checkRules(OperationTypeEnums.UNARIA) == true) new FormFrameProjecao(jCell, cells,graph);
+						
+					else if(((OperatorCell)cell).getType() == OperationType.SELECAO && cell.checkRules(OperationTypeEnums.UNARIA) == true) new FormFrameSelecao(jCell, cells,graph);
+						
+					else if(((OperatorCell)cell).getType() == OperationType.JUNCAO && cell.getParents().size() == 2 && cell.checkRules(OperationTypeEnums.BINARIA) == true) new FormFrameJuncao(jCell, cells,graph);
+					
+					else if(((OperatorCell)cell).getType() == OperationType.PRODUTO_CARTESIANO && cell.getParents().size() == 2 && cell.checkRules(OperationTypeEnums.BINARIA) == true) new FormFrameProdutoCartesiano(jCell, cells,graph);
+
+				}
+				leafs.add(cell);
+				leafs.remove(parentCell.getCell());
+				
+				newParent = null;
+				createEdge = false;
+				
+			}
+			
+			if(deleteCell == true) {
+				
+				graph.getModel().remove(jCell);	
+				deleteCell = false;
+				
+			}
+		}
+
+		if(e.getButton() == MouseEvent.BUTTON3 && jCell != null) {
+			
+			graph.getModel().remove(jCell);	
+
+		}
+		if(e.getButton() == MouseEvent.BUTTON2 && jCell != null) {
+			
+			cell.getSourceTableName(name);
+			
+		}
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+
+		Cell cell = jCell != null ? cells.stream().filter(x -> x.getCell().equals((mxCell)jCell)).findFirst().orElse(null) : null;
+		
+		if (e.getKeyCode() == KeyEvent.VK_S && jCell != null) {
+
+			new ResultFrame(cell.getContent());
+		
+		}else if(e.getKeyCode() == KeyEvent.VK_DELETE && jCell != null) {
+			
+			graph.getModel().remove(jCell);	
+		
+		}
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 }

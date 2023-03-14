@@ -5,12 +5,13 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import entities.util.FindRoots;
 import enums.OperationTypeEnums;
 import sgbd.query.Operator;
-import util.FindRoots;
 
 public abstract class Cell {
 	
+	protected List<Column> columns;
 	private String style;
 	private String name;
 	private Object cell;
@@ -21,8 +22,9 @@ public abstract class Cell {
 	private int length;
 	private int width;
 	
-	public Cell(String name, String style, Object cell, int x,int y,int length,int width) {
+	public Cell(String name, String style, Object cell, int x, int y, int length, int width) {
 		
+		this.columns = new ArrayList<>();
 		this.parents = new ArrayList<>();
 		this.style = style;
 		this.name = name;
@@ -33,6 +35,10 @@ public abstract class Cell {
 		this.length = length;
 		this.width = width;
 		
+	}
+	
+	public void setJGraphCell(Object cell) {
+		this.cell = cell;
 	}
 	
 	public Cell getChild() {
@@ -46,17 +52,33 @@ public abstract class Cell {
 	public List<Cell> getParents() {
 		return parents;
 	}
-
+	
+	public void setStyle(String style) {
+		this.style = style;
+	}
+	
 	public String getStyle() {
 		return style;
 	}
-
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
 	public String getName() {
 		return name;
 	}
-
+	
+	public List<Column> getColumns(){
+		return columns;
+	}
+	
 	public Object getCell() {
 		return cell;
+	}
+	
+	public void addParent(Cell parent) {
+		parents.add(parent);
 	}
 	
 	public int getX() {
@@ -91,10 +113,6 @@ public abstract class Cell {
 		this.width = newWidth;
 	}
 	
-	public void addParent(Cell parent) {
-		parents.add(parent);
-	}
-	
 	public String getSourceTableName(String columnName) {
 		
 		for(Cell cell : FindRoots.getRoots(this)) {
@@ -107,30 +125,38 @@ public abstract class Cell {
 		return null;
 		
 	}
-
-	public abstract Operator getData();
-	public abstract List<String> getColumnsName();
-	public abstract List<List<String>> getContent();
 	
 	public Boolean checkRules(OperationTypeEnums type) {
-		
+	
 		if(type == OperationTypeEnums.UNARIA) {
+			
 			if(this.getParents().size() != 1) {
+				
 				JOptionPane.showMessageDialog(null, "Operacao unaria", "Erro", JOptionPane.ERROR_MESSAGE);
 				return false;
+			
 			}
+			
 		}else if(type == OperationTypeEnums.BINARIA){
+			
 			if(this.getParents().size() > 2) {
+				
 				JOptionPane.showMessageDialog(null, "Operacao binaria", "Erro", JOptionPane.ERROR_MESSAGE);
 				return false;
+				
 			}else if(this.getParents().size() < 2) {
+				
 				return false;
+				
 			}
 		}
 		
 		return true;
+	
 	}
 	
-	
+	public abstract Operator getData();
+	public abstract List<String> getColumnsName();
+	public abstract List<List<String>> getContent();
 	
 }
