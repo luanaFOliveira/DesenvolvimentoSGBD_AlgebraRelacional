@@ -2,11 +2,10 @@
 
 ## Imediatos: 
 
-- formulário de seleção aceitar comparação com string e float
-- formulário de seleção poder colocar mais de uma condição (And / Or)
-- permitir que o usuário escolha o nome da tabela importada
-- condição utilizada na operação aparecer na célula ao invés do nome da operação
+- retirar a flechinha quando o usuário clicar no x ao invés de concluir a operação
+- clicar na tabela que irá ser salva
 - adicionar as operações mais básicas
+- adicionar a quebra de linha quando a condição da seleção ficar muito grande
 
 ## Importantes:
 
