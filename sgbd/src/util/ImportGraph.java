@@ -72,9 +72,9 @@ public class ImportGraph {
 	
 	public void addCells(List<String> line) {
 		
-		newCell = graph.insertVertex(null, null,line.get(0) , line.get(4), line.get(5), line.get(2), line.get(3), line.get(1));
+		//newCell = graph.insertVertex(null, null,line.get(0) , line.get(4), line.get(5), line.get(2), line.get(3), line.get(1));
 		
-		cells.add(new OperatorCell(line.get(0), line.get(1), newCell, currentType, line.get(4), line.get(5), line.get(2), line.get(3)));
+		//cells.add(new OperatorCell(line.get(0), line.get(1), newCell, currentType, line.get(4), line.get(5), line.get(2), line.get(3)));
 		
 		//graph.insertEdge(line.get(6), null,"", line.get(6), line.get(7));
 
