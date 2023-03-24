@@ -16,15 +16,12 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 
 import entities.Cell;
-import entities.TableCell;
-import enums.FileType;
 import util.ExportTable;
-import util.ImportFile;
-import javax.swing.JTextField;
 
 @SuppressWarnings("serial")
 public class FormFrameExportTable extends JDialog implements ActionListener{
@@ -38,7 +35,7 @@ public class FormFrameExportTable extends JDialog implements ActionListener{
 	private JLabel lblPickFileExtension;
 	private List<Cell> cells;
 	private JFrame exportframe;
-	private List<List<String>> data;
+	//private List<List<String>> data;
 	private JTextField textField;
 	private JLabel lblNewLabel;
 	
@@ -63,7 +60,7 @@ public class FormFrameExportTable extends JDialog implements ActionListener{
 		this.deleteCellReference = deleteCellReference;
 		this.exportframe = exportframe;
 		this.cells = cells;
-		this.data = data;
+		//this.data = data;
 		
 		initializeGUI();
 		

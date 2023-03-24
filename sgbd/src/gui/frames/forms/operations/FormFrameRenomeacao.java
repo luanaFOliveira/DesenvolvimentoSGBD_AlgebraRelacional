@@ -39,6 +39,7 @@ public class FormFrameRenomeacao extends JFrame implements ActionListener {
 	private JTextField textField;
 	private JComboBox comboBox;
 	private JButton btnPronto;
+	private String selectedColumn;
 	private List<String> columnsList;
 
 	
@@ -80,6 +81,7 @@ public class FormFrameRenomeacao extends JFrame implements ActionListener {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void initializeGUI() {
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 172);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -140,7 +142,8 @@ public class FormFrameRenomeacao extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if(e.getSource() == btnPronto) {
-			executeOperation(comboBox.getSelectedItem().toString(),textField.getText());
+			selectedColumn = comboBox.getSelectedItem().toString();
+			executeOperation(selectedColumn,textField.getText());
 		}
 	}
 	
@@ -159,17 +162,16 @@ public class FormFrameRenomeacao extends JFrame implements ActionListener {
 
           @Override
           public byte[] process(Tuple t) {
-        	  //tenho que ver se quer q coloque o nome da tabela igual tava salvando anteriormente
               String formated = t.getContent(parentCell.getSourceTableName(column)).getString(column)+ formatedString;
               return formated.getBytes(StandardCharsets.UTF_8);
           }
 
       }, formatedString);
-		System.out.println("old " +column+" new : "+formatedString);
+		
 	    operator.open();
 	    
-	    ((OperatorCell)cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
-        ((OperatorCell) cell).setOperator(operator);
+	    ((OperatorCell) cell).setOperator(operator);
+		((OperatorCell)cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
 		cell.setName("ρ  "+ formatedString);
 	    
         operator.close();
