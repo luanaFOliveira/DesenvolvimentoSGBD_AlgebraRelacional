@@ -40,12 +40,12 @@ import gui.frames.forms.importexport.FormFrameExportTable;
 import gui.frames.forms.importexport.FormFrameImportAs;
 import gui.frames.forms.operations.CartesianProduct;
 import gui.frames.forms.operations.FormFrameJoin;
+import gui.frames.forms.operations.FormFrameLeftJoin;
 import gui.frames.forms.operations.FormFrameProjection;
 import gui.frames.forms.operations.FormFrameRename;
 import gui.frames.forms.operations.FormFrameAgregacao;
 import gui.frames.forms.operations.FormFrameSelection;
 import gui.frames.forms.operations.FormFrameUnion;
-import gui.frames.forms.operations.LeftJoin;
 
 @SuppressWarnings("serial")
 public class ActionClass extends JFrame implements ActionListener, MouseListener, KeyListener {
@@ -418,7 +418,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 					else if (((OperatorCell) cell).getType() == OperationType.LEFTJOIN
 							&& cell.getParents().size() == 2 && cell.checkRules(OperationTypeEnums.BINARY) == true)
 
-						new LeftJoin(jCell, cells, graph);
+						new FormFrameLeftJoin(jCell, cells, graph);
 
 				}
 				leafs.add(cell);
