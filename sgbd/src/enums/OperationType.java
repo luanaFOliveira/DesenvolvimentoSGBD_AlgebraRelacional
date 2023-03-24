@@ -8,6 +8,7 @@ public enum OperationType {
 	PRODUTO_CARTESIANO,
 	UNIAO,
 	DIFERENCA,
+	AGREGACAO,
 	RENOMEACAO;
 	
 }

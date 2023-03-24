@@ -21,6 +21,7 @@ public abstract class Cell {
 	private int y;
 	private int length;
 	private int width;
+	protected List<List<String>> content;
 	
 	public Cell(String name, String style, Object cell, int x, int y, int length, int width) {
 		
@@ -71,6 +72,22 @@ public abstract class Cell {
 	
 	public List<Column> getColumns(){
 		return columns;
+	}
+	
+	public List<String> getColumnsName(){
+		
+		List<String> names = new ArrayList<>();
+		
+		columns.forEach(x -> names.add(x.getName()));
+		
+		return names;
+		
+	}
+	
+	public List<List<String>> getContent(){
+		
+		return content;
+		
 	}
 	
 	public Object getCell() {
@@ -126,9 +143,15 @@ public abstract class Cell {
 		
 	}
 	
+	public List<Cell> getAllSourceTables(){
+		
+		return FindRoots.getRoots(this);
+		
+	}
+	
 	public Boolean checkRules(OperationTypeEnums type) {
 	
-		if(type == OperationTypeEnums.UNARIA) {
+		if(type == OperationTypeEnums.UNARY) {
 			
 			if(this.getParents().size() != 1) {
 				
@@ -137,7 +160,7 @@ public abstract class Cell {
 			
 			}
 			
-		}else if(type == OperationTypeEnums.BINARIA){
+		}else if(type == OperationTypeEnums.BINARY){
 			
 			if(this.getParents().size() > 2) {
 				
@@ -156,7 +179,5 @@ public abstract class Cell {
 	}
 	
 	public abstract Operator getData();
-	public abstract List<String> getColumnsName();
-	public abstract List<List<String>> getContent();
 	
 }

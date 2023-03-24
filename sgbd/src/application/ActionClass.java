@@ -9,6 +9,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,15 +34,17 @@ import entities.TableCell;
 import enums.OperationType;
 import enums.OperationTypeEnums;
 import gui.buttons.TypesButtons;
+import gui.frames.forms.operations.FormFrameAgregacao;
 import gui.frames.ResultFrame;
-import gui.frames.forms.FormFrameCreateTable;
-import gui.frames.forms.FormFrameExportTable;
-import gui.frames.forms.FormFrameImportFile;
-import gui.frames.forms.operations.FormFrameJuncao;
-import gui.frames.forms.operations.FormFrameProdutoCartesiano;
-import gui.frames.forms.operations.FormFrameProjecao;
-import gui.frames.forms.operations.FormFrameSelecao;
-import util.ExportTable;
+import gui.frames.forms.create.FormFrameCreateTable;
+import gui.frames.forms.importexport.FormFrameExportTable;
+import gui.frames.forms.importexport.FormFrameImportAs;
+import gui.frames.forms.operations.CartesianProduct;
+import gui.frames.forms.operations.FormFrameJoin;
+import gui.frames.forms.operations.FormFrameProjection;
+import gui.frames.forms.operations.FormFrameRenomeacao;
+import gui.frames.forms.operations.FormFrameSelection;
+import gui.frames.forms.operations.FormFrameUnion;
 
 @SuppressWarnings("serial")
 public class ActionClass extends JFrame implements ActionListener, MouseListener, KeyListener{
@@ -59,9 +64,10 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	private TypesButtons tipoProjecao;
 	private TypesButtons tipoSelecao;
 	private TypesButtons tipoProdutoCartesiano;
-	//private TypesButtons tipoUniao;
+	private TypesButtons tipoUniao;
 	//private TypesButtons tipoDiferenca;
-	//private TypesButtons tipoRenomeacao;
+	private TypesButtons tipoRenomeacao;
+	private TypesButtons tipoAgregacao;
 	private TypesButtons tipoJuncao;
 	
 	private Object newParent;
@@ -77,8 +83,6 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	private JToolBar toolBar;
 	
 	private JButton saveTableButton;
-	private JButton saveImageButton;
-	private JButton saveGraphButton;
 	
 	private List<Cell> cells;
 	private List<Cell> leafs;
@@ -87,7 +91,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	private JButton btnCreateTable;
 	
 	public ActionClass() {
-		super("Jgraph teste");
+		super("OurDB");
 		initGUI();
 	}
 	
@@ -100,7 +104,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		graphComponent.setPreferredSize(new Dimension(400,400));
 		getContentPane().add(graphComponent);
 		
-	    containerPanel = new JPanel(new GridLayout(4, 1));
+	    containerPanel = new JPanel(new GridLayout(7, 1));
 	    mxStylesheet stylesheet = graph.getStylesheet();
 	    
 	    tipoProjecao = new TypesButtons(stylesheet,"π Projecao","projecao");
@@ -119,19 +123,25 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	    tipoProdutoCartesiano = new TypesButtons(stylesheet,"✕ Produto Cartesiano","produtoCartesiano");
 	    tipoProdutoCartesiano.getButton().addActionListener(this);
 	    containerPanel.add(tipoProdutoCartesiano.getPanel());
-	    /*
+	    
 	    tipoUniao = new TypesButtons(stylesheet,"∪ Uniao","uniao");
 	    tipoUniao.getButton().addActionListener(this);
 	    containerPanel.add(tipoUniao.getPanel());
+	    
+	    tipoAgregacao = new TypesButtons(stylesheet,"G Agregacao","agregacao");
+	    tipoAgregacao.getButton().addActionListener(this);
+	    containerPanel.add(tipoAgregacao.getPanel());
 
+	    /*
 	    tipoDiferenca = new TypesButtons(stylesheet,"- Diferenca","diferenca");
 	    tipoDiferenca.getButton().addActionListener(this);
 	    containerPanel.add(tipoDiferenca.getPanel());
+	    */
 	    
 	    tipoRenomeacao = new TypesButtons(stylesheet,"ρ Renomeacao","renomeacao");
 	    tipoRenomeacao.getButton().addActionListener(this);
 	    containerPanel.add(tipoRenomeacao.getPanel());
-	    */
+	    
 	    
 		toolBar = new JToolBar();
 		getContentPane().add(toolBar, BorderLayout.SOUTH);
@@ -182,6 +192,23 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		graphComponent.addKeyListener(this);
 		
 		graph.getModel().endUpdate();
+		
+	    addWindowListener(new WindowAdapter() {
+
+	        public void windowClosing(WindowEvent e) {
+
+	        	File directory = new File(".");
+	        	File[] filesList = directory.listFiles();
+	        	for (File file : filesList) {
+	        	    if (file.isFile() && file.getName().endsWith(".dat")) {
+	        	        file.delete();
+	        	    }
+	        	}
+
+
+	        }
+
+	    });
 			
 	}
 
@@ -212,21 +239,25 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 			
 			assignVariables("produtoCartesiano","✕  produto cartesiano", true, OperationType.PRODUTO_CARTESIANO);
 			
-		}/*else if(e.getSource() == tipoUniao.getButton()) {
+		}else if(e.getSource() == tipoUniao.getButton()) {
 			
 			assignVariables("uniao","∪  uniao", true, OperationType.UNIAO);
 			
-		}else if(e.getSource() == tipoDiferenca.getButton()) {
+		}/*else if(e.getSource() == tipoDiferenca.getButton()) {
 			
 			assignVariables("diferenca","-  diferenca", true, OperationType.DIFERENCA);
 			
-		}else if(e.getSource() == tipoRenomeacao.getButton()) {
+		}*/else if(e.getSource() == tipoRenomeacao.getButton()) {
 			
 			assignVariables("renomeacao","ρ  renomeacao", true, OperationType.RENOMEACAO);
 			
-		}*/else if(e.getSource() == tipoJuncao.getButton()) {
+		}else if(e.getSource() == tipoJuncao.getButton()) {
 			
 			assignVariables("juncao","|X| juncao", true, OperationType.JUNCAO);
+
+		}else if(e.getSource() == tipoAgregacao.getButton()) {
+			
+			assignVariables("agregacao","G agregacao", true, OperationType.AGREGACAO);
 
 		}else if(e.getSource() == edgeButton) {
 			
@@ -243,7 +274,10 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 			Boolean deleteCell = false;
 			AtomicReference<Boolean> deleteCellReference = new AtomicReference<>(deleteCell);
 			
-			new FormFrameImportFile(tableCell, deleteCellReference);
+			List<String> tablesName = new ArrayList<>();
+			cells.forEach(x -> tablesName.add(x.getName().toUpperCase()));
+			
+			new FormFrameImportAs(tableCell, tablesName, deleteCellReference);
 			
 			if(!deleteCellReference.get()) {
 				
@@ -278,10 +312,8 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 			
 		}else if(e.getSource() == saveTableButton) {
 			
-			Boolean deleteCell = false;
-			AtomicReference<Boolean> deleteCellReference = new AtomicReference<>(deleteCell);
-
-			new FormFrameExportTable(deleteCellReference,cells,this,cells.get(cells.size()-1).getContent());
+			if(!cells.isEmpty())
+				new FormFrameExportTable(cells,this,cells.get(cells.size()-1).getContent(), graphComponent);
 			
 		}
 			
@@ -293,7 +325,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		if(currentTableCell == null) {
 			return;
 		}
-		
+
 		jCell = graphComponent.getCellAt(e.getX(), e.getY());
 		Cell cell = cells.stream().filter(x -> x.getCell().equals((mxCell)jCell)).findFirst().orElse(null);
 		
@@ -338,13 +370,41 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 
 				if(cell instanceof OperatorCell) {
 					
-					if(((OperatorCell)cell).getType() == OperationType.PROJECAO && cell.checkRules(OperationTypeEnums.UNARIA) == true) new FormFrameProjecao(jCell, cells,graph);
+					if(((OperatorCell)cell).getType() == OperationType.PROJECAO &&
+						 cell.checkRules(OperationTypeEnums.UNARY) == true)
 						
-					else if(((OperatorCell)cell).getType() == OperationType.SELECAO && cell.checkRules(OperationTypeEnums.UNARIA) == true) new FormFrameSelecao(jCell, cells,graph);
+						new FormFrameProjection(jCell, cells,graph);
 						
-					else if(((OperatorCell)cell).getType() == OperationType.JUNCAO && cell.getParents().size() == 2 && cell.checkRules(OperationTypeEnums.BINARIA) == true) new FormFrameJuncao(jCell, cells,graph);
+					else if(((OperatorCell)cell).getType() == OperationType.SELECAO &&
+							  cell.checkRules(OperationTypeEnums.UNARY) == true)
+						
+						new FormFrameSelection(jCell, cells,graph);
 					
-					else if(((OperatorCell)cell).getType() == OperationType.PRODUTO_CARTESIANO && cell.getParents().size() == 2 && cell.checkRules(OperationTypeEnums.BINARIA) == true) new FormFrameProdutoCartesiano(jCell, cells,graph);
+					else if(((OperatorCell)cell).getType() == OperationType.AGREGACAO &&
+							//tem q ver se eh unario
+							  cell.checkRules(OperationTypeEnums.UNARY) == true)
+						
+						new FormFrameAgregacao(jCell, cells,graph);
+					
+					else if(((OperatorCell)cell).getType() == OperationType.RENOMEACAO &&
+							  cell.checkRules(OperationTypeEnums.UNARY) == true)
+						
+						new FormFrameRenomeacao(jCell, cells,graph);
+						
+					else if(((OperatorCell)cell).getType() == OperationType.JUNCAO &&
+							  cell.getParents().size() == 2 && cell.checkRules(OperationTypeEnums.BINARY) == true)
+									
+						new FormFrameJoin(jCell, cells,graph);
+					
+					else if(((OperatorCell)cell).getType() == OperationType.PRODUTO_CARTESIANO &&
+							  cell.getParents().size() == 2 && cell.checkRules(OperationTypeEnums.BINARY) == true)
+						
+						new CartesianProduct(jCell, cells,graph);
+					
+					else if(((OperatorCell)cell).getType() == OperationType.UNIAO &&
+							  cell.getParents().size() == 2 && cell.checkRules(OperationTypeEnums.BINARY) == true)
+						
+						new FormFrameUnion(jCell, cells,graph);
 
 				}
 				leafs.add(cell);
@@ -413,7 +473,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		
 		if (e.getKeyCode() == KeyEvent.VK_S && jCell != null) {
 
-			new ResultFrame(cell.getContent());
+			new ResultFrame(cell);
 		
 		}else if(e.getKeyCode() == KeyEvent.VK_DELETE && jCell != null) {
 			
