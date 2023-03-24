@@ -146,8 +146,7 @@ public class FormFrameProjection extends JFrame implements ActionListener {
 			}
 
 		} else if (e.getSource() == btnRemove) {
-			System.out.println("botao remove");
-
+			textArea.setText(textArea.getText().replace(textArea.getSelectedText(),""));
 		} else if (e.getSource() == btnReady) {
 
 			columnsResult = new ArrayList<>(List.of(textArea.getText().split("\n")));

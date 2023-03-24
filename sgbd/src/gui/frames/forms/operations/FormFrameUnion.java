@@ -208,7 +208,7 @@ public class FormFrameUnion extends JFrame implements ActionListener{
 
 		}else if(e.getSource() == btnRemove1) {
 			
-			System.out.println("botao remove");
+			textArea1.setText(textArea1.getText().replace(textArea1.getSelectedText(),""));
 			
 		}else if(e.getSource() == btnAdd2){
 
@@ -222,7 +222,7 @@ public class FormFrameUnion extends JFrame implements ActionListener{
 
 		}else if(e.getSource() == btnRemove2) {
 			
-			System.out.println("botao remove II");
+			textArea2.setText(textArea2.getText().replace(textArea2.getSelectedText(),""));
 		
 		}else if(e.getSource() == btnReady) {
 	        
