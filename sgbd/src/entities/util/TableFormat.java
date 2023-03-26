@@ -37,6 +37,7 @@ public class TableFormat {
 						case "float":
 						
 							row.add(line.getValue().getFloat(data.getKey()).toString());
+							System.out.println(line.getValue().getFloat(data.getKey()));
 							break;
 							
 						case "string":

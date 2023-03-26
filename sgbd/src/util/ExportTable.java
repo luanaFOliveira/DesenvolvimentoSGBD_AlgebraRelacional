@@ -10,29 +10,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.table.TableModel;
 
+import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 
 import entities.Cell;
 import entities.TableCell;
 import enums.FileType;
 import net.coobird.thumbnailator.Thumbnails;
-import sgbd.prototype.ComplexRowData;
 
 @SuppressWarnings("serial")
 public class ExportTable extends JPanel {
-
-	private JTable table;
 
 	public ExportTable(mxGraphComponent frame) {
 
@@ -50,7 +44,7 @@ public class ExportTable extends JPanel {
 
 	}
 
-	public ExportTable(List<Cell> cells, String path, int a) {
+	public ExportTable(Map<mxCell, Cell> cells, String path, int a) {
 
 		saveGraph(cells, path);
 
@@ -85,23 +79,6 @@ public class ExportTable extends JPanel {
 			TableCell createdCell = new TableCell(10, 10);
 			
 			new OperatorToTable(createdCell, cell, fileName, cancelService);
-			
-			Iterator<ComplexRowData> c = createdCell.getTable().iterator();
-			
-			while(c.hasNext()) {
-				
-				ComplexRowData csave = c.next();
-				Iterator<Entry<String, byte[]>> d = csave.iterator(); 
-				
-				
-				
-				while(d.hasNext()) {
-					
-					System.out.println(csave.getString(d.next().getKey()));
-					
-				}
-				
-			}
 			
 			createdCell.getTable().saveHeader(headFileName);
 			createdCell.getTable().close();
@@ -218,16 +195,16 @@ public class ExportTable extends JPanel {
 		}
 	}
 
-	private void saveGraph(List<Cell> cells, String path) {
-		try {
+	private void saveGraph(Map<mxCell, Cell> cells, String path) {
+		/*try {
 			FileWriter csv = new FileWriter(new File(path));
-
+			
 			for (int i = 0; i < cells.size(); i++) {
 				csv.write("Cell,Name,Style,Length,Width,X,Y");
 
 				csv.write("\n");
 
-				csv.write(cells.get(0).getCell().toString() + ",");
+				csv.write(cells.get(csv).getCell().toString() + ",");
 				csv.write(cells.get(0).getName() + ",");
 				csv.write(cells.get(0).getStyle() + ",");
 				csv.write(cells.get(0).getLength() + ",");
@@ -277,7 +254,7 @@ public class ExportTable extends JPanel {
 		} catch (IOException e) {
 			System.out.println("Error " + e);
 		}
-
+	*/
 	}
 
 }

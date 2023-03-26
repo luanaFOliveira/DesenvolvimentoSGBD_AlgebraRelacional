@@ -188,8 +188,8 @@ public abstract class Cell {
 	
 	}
 	
-	@Override
-	public String toString() {
+	
+	public String console() {
 
 	    List<Integer> columnWidths = new ArrayList<>();
 	    for (String column : getColumnsName()) {
