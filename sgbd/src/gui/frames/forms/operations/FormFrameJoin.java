@@ -54,7 +54,8 @@ public class FormFrameJoin extends JFrame implements ActionListener {
 	}
 
 	public FormFrameJoin(Object cell, List<Cell> cells, mxGraph graph) {
-		
+		super("Join");
+
 		this.setVisible(true);
 		
 		this.cell = cells.stream().filter(x -> x.getCell().equals(((mxCell)cell))).findFirst().orElse(null);

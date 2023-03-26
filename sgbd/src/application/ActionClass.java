@@ -43,6 +43,7 @@ import gui.frames.forms.operations.FormFrameJoin;
 import gui.frames.forms.operations.FormFrameLeftJoin;
 import gui.frames.forms.operations.FormFrameProjection;
 import gui.frames.forms.operations.FormFrameRename;
+import gui.frames.forms.operations.FormFrameRenomeacao;
 import gui.frames.forms.operations.FormFrameAgregacao;
 import gui.frames.forms.operations.FormFrameSelection;
 import gui.frames.forms.operations.FormFrameUnion;
@@ -93,7 +94,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	private JButton btnCreateTable;
 
 	public ActionClass() {
-		super("OurDB");
+		super("DBest");
 		initGUI();
 	}
 
@@ -106,7 +107,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		graphComponent.setPreferredSize(new Dimension(400, 400));
 		getContentPane().add(graphComponent);
 
-		containerPanel = new JPanel(new GridLayout(8, 1));
+		containerPanel = new JPanel(new GridLayout(6, 1));
 		mxStylesheet stylesheet = graph.getStylesheet();
 
 		btnTypeProjection = new TypesButtons(stylesheet, "π Projeção", "Projeção");
@@ -129,19 +130,21 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		btnTypeUnion.getButton().addActionListener(this);
 		containerPanel.add(btnTypeUnion.getPanel());
 
+		/*
 		btnTypeAggregation = new TypesButtons(stylesheet, "G Agregação", "Agregação");
 		btnTypeAggregation.getButton().addActionListener(this);
 		containerPanel.add(btnTypeAggregation.getPanel());
-
+*/
 		/*
 		 * tipoDiferenca = new TypesButtons(stylesheet,"- Diferenca","diferenca");
 		 * tipoDiferenca.getButton().addActionListener(this);
 		 * containerPanel.add(tipoDiferenca.getPanel());
 		 */
+		/*
 		btnTypeRename = new TypesButtons(stylesheet, "ρ Renomeação", "Renomeação");
 		btnTypeRename.getButton().addActionListener(this);
 		containerPanel.add(btnTypeRename.getPanel());
-		
+		*/
 		btnTypeLeftJoin = new TypesButtons(stylesheet, "⟕ Left Join", "Left Join");
 		btnTypeLeftJoin.getButton().addActionListener(this);
 		containerPanel.add(btnTypeLeftJoin.getPanel());
@@ -398,7 +401,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 					else if (((OperatorCell) cell).getType() == OperationType.RENAME
 							&& cell.checkRules(OperationTypeEnums.UNARY) == true)
 
-						new FormFrameRename(jCell, cells, graph);
+						new FormFrameRenomeacao(jCell, cells, graph);
 
 					else if (((OperatorCell) cell).getType() == OperationType.JOIN && cell.getParents().size() == 2
 							&& cell.checkRules(OperationTypeEnums.BINARY) == true)

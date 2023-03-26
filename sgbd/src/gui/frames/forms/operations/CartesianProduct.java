@@ -20,7 +20,6 @@ public class CartesianProduct{
 	
 
 	public CartesianProduct(Object cell, List<Cell> cells, mxGraph graph) {
-		
 		this.cell = cells.stream().filter(x -> x.getCell().equals(((mxCell)cell))).findFirst().orElse(null);
 		this.parentCell1 = this.cell.getParents().get(0);
 		this.parentCell2 = this.cell.getParents().get(1);

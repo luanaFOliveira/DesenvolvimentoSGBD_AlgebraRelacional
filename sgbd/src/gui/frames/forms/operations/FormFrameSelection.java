@@ -86,6 +86,7 @@ public class FormFrameSelection extends JFrame implements ActionListener, Docume
     }
 
     public FormFrameSelection(Object cell, List<Cell> cells, mxGraph graph) {
+		super("Selecao");
 
         this.setVisible(true);
 

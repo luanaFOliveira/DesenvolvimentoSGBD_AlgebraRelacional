@@ -69,7 +69,8 @@ public class FormFrameUnion extends JFrame implements ActionListener{
 	}
 
 	public FormFrameUnion(Object cell, List<Cell> cells, mxGraph graph) {
-		
+		super("Uniao");
+
 		this.setVisible(true);
 		
 		this.cell = cells.stream().filter(x -> x.getCell().equals(((mxCell)cell))).findFirst().orElse(null);

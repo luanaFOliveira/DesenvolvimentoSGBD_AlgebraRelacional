@@ -51,7 +51,6 @@ public class OperatorCell extends Cell{
 				for(Column column : columns) {
 					
 					if(columnsName.contains(column.getName())) {
-						
 						cellColumns.add(column);
 						
 					}

@@ -42,7 +42,6 @@ public class ResultFrame extends JDialog{
 	}
 	
 	public ResultFrame(Cell cell) {
-	
 		super((Window)null);
 		setModal(true);
 		
@@ -87,6 +86,7 @@ public class ResultFrame extends JDialog{
 		JScrollPane scrollPane = new JScrollPane(table);
 		
 		JLabel lblNewLabel = new JLabel("Resultado");
+		
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)

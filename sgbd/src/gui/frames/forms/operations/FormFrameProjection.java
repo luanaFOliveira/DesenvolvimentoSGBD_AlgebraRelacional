@@ -59,6 +59,7 @@ public class FormFrameProjection extends JFrame implements ActionListener {
 	}
 
 	public FormFrameProjection(Object cell, List<Cell> cells, mxGraph graph) {
+		super("Projecao");
 
 		this.setVisible(true);
 

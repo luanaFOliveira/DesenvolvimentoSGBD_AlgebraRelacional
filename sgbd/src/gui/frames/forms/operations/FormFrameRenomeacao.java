@@ -1,11 +1,6 @@
 package gui.frames.forms.operations;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -16,38 +11,34 @@ import com.mxgraph.view.mxGraph;
 
 import entities.Cell;
 import entities.OperatorCell;
-import entities.util.TableFormat;
-import sgbd.prototype.Column;
+import entities.Column;
 import sgbd.query.Operator;
-import sgbd.query.Tuple;
-import sgbd.query.unaryop.AsOperator;
-import sgbd.query.unaryop.FilterColumnsOperator;
-import sgbd.table.Table;
-import sgbd.util.Conversor;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JComboBox;
+import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JLabel;
-import javax.swing.JButton;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
+
 
 public class FormFrameRenomeacao extends JFrame implements ActionListener {
 
 	private JPanel contentPane;
-	private JTextField textField;
-	private JComboBox comboBox;
+	private JTextField txtOldName;
+	private JTextField txtNewName;
 	private JButton btnPronto;
-	private String selectedColumn;
-	private List<String> columnsList;
-
+	private String newName;
 	
 	private Cell cell;
 	private Cell parentCell;
 	private Object jCell;
 	private mxGraph graph;
-	
+
 	/**
 	 * Launch the application.
 	 */
@@ -63,9 +54,11 @@ public class FormFrameRenomeacao extends JFrame implements ActionListener {
 			}
 		});
 	}
+	
+	
+	public FormFrameRenomeacao(Object cell, List<Cell> cells,mxGraph graph) {
+		super("Renomeacao");
 
-	public FormFrameRenomeacao(Object cell, List<Cell> cells, mxGraph graph) {
-		
 		this.setVisible(true);
 		
 		this.cell = cells.stream().filter(x -> x.getCell().equals(((mxCell)cell))).findFirst().orElse(null);
@@ -75,107 +68,94 @@ public class FormFrameRenomeacao extends JFrame implements ActionListener {
 		initializeGUI();
 
 	}
-	
+
 	/**
 	 * Create the frame.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void initializeGUI() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 172);
+		setBounds(100, 100, 450, 226);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
 		setContentPane(contentPane);
 		
-		columnsList = new ArrayList<String>();
-		
-		columnsList = parentCell.getColumnsName();
-		
-		comboBox = new JComboBox(columnsList.toArray(new String[0]));
-		
-		textField = new JTextField();
-		textField.setColumns(10);
-		
-		
-		JLabel lblNewLabel = new JLabel("Coluna");
-		
-		JLabel lblNewLabel_1 = new JLabel("as");
-		
 		btnPronto = new JButton("Pronto");
 		btnPronto.addActionListener(this);
-
+		
+		txtOldName = new JTextField();
+		txtOldName.setColumns(10);
+		txtOldName.setText(parentCell.getName());
+		
+		txtNewName = new JTextField();
+		txtNewName.setColumns(10);
+		
+		JLabel lblNewLabel = new JLabel("Nome Tabela");
+		
+		JLabel lblNewLabel_1 = new JLabel("Novo Nome");
+		
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
-			gl_contentPane.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_contentPane.createSequentialGroup()
-					.addGap(19)
+			gl_contentPane.createParallelGroup(Alignment.TRAILING)
+				.addGroup(Alignment.LEADING, gl_contentPane.createSequentialGroup()
+					.addGap(29)
 					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblNewLabel)
+						.addComponent(txtOldName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblNewLabel))
+					.addPreferredGap(ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+						.addComponent(lblNewLabel_1)
 						.addGroup(gl_contentPane.createSequentialGroup()
-							.addComponent(comboBox, GroupLayout.PREFERRED_SIZE, 118, GroupLayout.PREFERRED_SIZE)
-							.addGap(18)
-							.addComponent(lblNewLabel_1)
-							.addGap(30)
-							.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(53)
+							.addComponent(txtNewName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addGap(45)
 							.addComponent(btnPronto)))
-					.addGap(24))
+					.addGap(42))
 		);
 		gl_contentPane.setVerticalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPane.createSequentialGroup()
-					.addGap(30)
-					.addComponent(lblNewLabel)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addGap(60)
 					.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
-						.addComponent(comboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblNewLabel_1)
-						.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnPronto))
-					.addContainerGap(79, Short.MAX_VALUE))
+						.addComponent(lblNewLabel)
+						.addComponent(lblNewLabel_1))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_contentPane.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnPronto)
+						.addComponent(txtOldName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(txtNewName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(148, Short.MAX_VALUE))
 		);
 		contentPane.setLayout(gl_contentPane);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		
 		if(e.getSource() == btnPronto) {
-			selectedColumn = comboBox.getSelectedItem().toString();
-			executeOperation(selectedColumn,textField.getText());
+			newName = txtNewName.getText();
+			//parentCell.setName(newName);
+	        executeOperation();		
+
 		}
+		// TODO Auto-generated method stub
+		
 	}
 	
-	public void executeOperation(String column,String formatedString) {
-		
-		//List<String> aux = parentCell.getColumnsName();
-		//aux.removeAll(columnsResult);
-		
+	public void executeOperation() {
 		Operator operator = parentCell.getData();
-		
-		operator = new AsOperator(operator,(Conversor) new Conversor() {
-          @Override
-          public Column metaInfo(Tuple t) {
-              return t.getContent(parentCell.getSourceTableName(column)).getMeta(column);
-          }
 
-          @Override
-          public byte[] process(Tuple t) {
-              String formated = t.getContent(parentCell.getSourceTableName(column)).getString(column)+ formatedString;
-              return formated.getBytes(StandardCharsets.UTF_8);
-          }
+		operator.open();
+		cell.setName(newName);
 
-      }, formatedString);
-		
-	    operator.open();
-	    
-	    ((OperatorCell) cell).setOperator(operator);
-		((OperatorCell)cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
-		cell.setName("ρ  "+ formatedString);
-	    
+		List<Column> aux = cell.getColumns();
+		for(Column column : aux) {
+			String name = column.getName();
+			//column.setName();
+		}
+
+		 ((OperatorCell)cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
+	     ((OperatorCell) cell).setOperator(operator);
         operator.close();
-		
+
         dispose();
 		
 	}

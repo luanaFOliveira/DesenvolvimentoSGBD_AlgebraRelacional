@@ -55,7 +55,7 @@ public class FormFrameLeftJoin extends JFrame implements ActionListener {
 	}
 
 	public FormFrameLeftJoin(Object cell, List<Cell> cells, mxGraph graph) {
-		
+		super("Left Join");
 		this.setVisible(true);
 		
 		this.cell = cells.stream().filter(x -> x.getCell().equals(((mxCell)cell))).findFirst().orElse(null);

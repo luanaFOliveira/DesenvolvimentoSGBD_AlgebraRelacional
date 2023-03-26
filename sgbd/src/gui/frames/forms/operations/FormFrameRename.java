@@ -168,25 +168,57 @@ public class FormFrameRename extends JFrame implements ActionListener {
 	    operator.open();
 		
 
-		System.out.println(parentCell.getColumnsName());
-
+		//System.out.println(parentCell.getColumnsName());
 		
-		for(entities.Column parentColumn : parentCell.getColumns()) {
-			
-			if(parentColumn.getName().equals(column)) {
-				parentColumn.setName(parentCell.getSourceTableName(column)+ "_"+formatedString);
+		List<entities.Column> aux = new ArrayList<>();
+		aux.addAll(parentCell.getColumns());
+		
+
+		System.out.println(parentCell.getColumnsName());
+		System.out.println(aux);
+
+		entities.Column auxColumn = null;
+
+		for(entities.Column column_ : aux) {
+			if(column_.getName().equals(column)) {
+				auxColumn = column_;
 			}
 		}
+		int index = aux.indexOf(auxColumn);
+		aux.get(index).setName(formatedString);
 		
 		System.out.println(parentCell.getColumnsName());
-		System.out.println(operator.getContentInfo().values());
+		System.out.println(aux);
 		
+		//entities.Column auxColumn = null;
+		
+		/*
+		for(List<entities.Column> columns : List.of(parentCell.getColumns())) {
+			for(entities.Column column_ : columns) {
+				if(column_.getName().equals(column)) {
+					auxColumn = column_;
+				}
+				aux.add(column_);
+			}
+			
+		}
+		
+		int index = aux.indexOf(auxColumn);
+		System.out.println(parentCell.getColumnsName());
+
+		aux.get(index).setName(formatedString);
+		*/
+		//if(parentColumn.getName().equals(column)) {
+		//	parentColumn.setName(parentCell.getSourceTableName(column)+ "_"+formatedString);
+		//}
+		//System.out.println(parentCell.getColumnsName());
+
 	    //mudar o nome na lista de colunas da cell tbm, vai ter q criar um setter pra isso
 	    
-	    ((OperatorCell)cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
+	    ((OperatorCell)cell).setColumns(List.of(aux), operator.getContentInfo().values());
+
         ((OperatorCell) cell).setOperator(operator);
 		cell.setName("ρ  "+ formatedString);
-	    System.out.println(cell.getColumnsName());
         operator.close();
 		
         dispose();
