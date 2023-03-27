@@ -73,7 +73,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	//private TypesButtons btnTypeRename;
 	//private TypesButtons btnTypeAggregation;
 	private TypesButtons btnTypeJoin;
-	//private TypesButtons btnTypeLeftJoin;
+	private TypesButtons btnTypeLeftJoin;
 
 	private mxCell newParent;
 
@@ -109,7 +109,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		graphComponent.setPreferredSize(new Dimension(400, 400));
 		getContentPane().add(graphComponent);
 
-		containerPanel = new JPanel(new GridLayout(5, 1));
+		containerPanel = new JPanel(new GridLayout(6, 1));
 		mxStylesheet stylesheet = graph.getStylesheet();
 
 		btnTypeProjection = new TypesButtons(stylesheet, "π Projeção", "Projeção");
@@ -145,11 +145,12 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		btnTypeRename.getButton().addActionListener(this);
 		containerPanel.add(btnTypeRename.getPanel());
 		
-		
+				*/
+
 		btnTypeLeftJoin = new TypesButtons(stylesheet, "⟕ Junção à esquerda", "Junção à esquerda");
 		btnTypeLeftJoin.getButton().addActionListener(this);
 		containerPanel.add(btnTypeLeftJoin.getPanel());
-		*/
+		
 		toolBar = new JToolBar();
 		getContentPane().add(toolBar, BorderLayout.SOUTH);
 
@@ -267,11 +268,11 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 
 			assignVariables("Agregação", "G Agregação", true, OperationType.AGGREGATION);
 
-		} else if (e.getSource() == btnTypeLeftJoin.getButton()) {
+		}*/ else if (e.getSource() == btnTypeLeftJoin.getButton()) {
 
 			assignVariables("Junção à esquerda", "⟕ Junção à esquerda", true, OperationType.LEFTJOIN);
 
-		}  */else if (e.getSource() == btnTypeJoin.getButton()) {
+		} else if (e.getSource() == btnTypeJoin.getButton()) {
 
 			assignVariables("Junção", "|X| Junção", true, OperationType.JOIN);
 

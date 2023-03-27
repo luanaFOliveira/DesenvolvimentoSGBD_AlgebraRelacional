@@ -32,7 +32,7 @@ public class OperatorToTable {
 
 		SortColumns.list(cell.getData(), columnsName);
 		allData.add(columnsName);
-		allData.addAll(cell.getContent());
+		allData.addAll(cell.getListContent());
 
 		new FormFramePrimaryKey(allData, pkName, cancelService);
 

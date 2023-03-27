@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,7 +36,7 @@ public class ExportTable extends JPanel {
 	public ExportTable(AtomicReference<Cell> cell, FileType type, AtomicReference<Boolean> cancelService) {
 
 		if (type == FileType.CSV)
-			exportToCsv(cell.get().getContent());
+			exportToCsv(cell.get().getMapContent());
 
 		else if (type == FileType.DAT)
 			exportToDat(cell.get(), cancelService);
@@ -105,7 +104,7 @@ public class ExportTable extends JPanel {
 
 	}
 
-	private void exportToCsv(List<List<String>> data) {
+	private void exportToCsv(Map<Integer, Map<String, String>> data) {
 
 		try {
 
@@ -129,7 +128,7 @@ public class ExportTable extends JPanel {
 
 				FileWriter csv = new FileWriter(fileToSave);
 
-				for (String columnName : data.get(0)) {
+				for (String columnName : data.get(0).keySet()) {
 
 					csv.write(columnName.substring(columnName.indexOf("_") + 1) + ",");
 
@@ -139,9 +138,9 @@ public class ExportTable extends JPanel {
 
 				data.remove(0);
 
-				for (List<String> row : data) {
+				for (Map<String, String> row : data.values()) {
 
-					for (String inf : row) {
+					for (String inf : row.values()) {
 
 						csv.write(inf + ",");
 

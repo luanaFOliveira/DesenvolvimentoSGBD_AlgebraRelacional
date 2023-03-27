@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -302,7 +300,7 @@ public class FormFrameUnion extends JDialog implements ActionListener, DocumentL
 		selectedColumns1.replaceAll(s -> s.substring(s.indexOf(".")+1));
 		selectedColumns2.replaceAll(s -> s.substring(s.indexOf(".")+1));
 		
-		((OperatorCell)cell).setColumns(List.of(parentCell1.getColumns(), parentCell2.getColumns()), Stream.of(selectedColumns1).collect(Collectors.toList()));
+		((OperatorCell)cell).setColumns(List.of(parentCell1.getColumns(), parentCell2.getColumns()), operator.getContentInfo().values());
 		
 		cell.setName("U   " + selectedColumns1.toString() + " U " + selectedColumns2.toString());    
 		

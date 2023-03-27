@@ -118,7 +118,7 @@ public class TableCreator {
 
 			}  else {
 
-				prototype.addColumn(column.getName(), 100, Column.NONE);
+				prototype.addColumn(column.getName(), 100, Column.STRING);
 
 			}
 
