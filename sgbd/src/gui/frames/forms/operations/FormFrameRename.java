@@ -1,14 +1,22 @@
 package gui.frames.forms.operations;
 
-import java.awt.EventQueue;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import javax.swing.JFrame;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 
 import com.mxgraph.model.mxCell;
@@ -16,24 +24,13 @@ import com.mxgraph.view.mxGraph;
 
 import entities.Cell;
 import entities.OperatorCell;
-import entities.util.TableFormat;
 import sgbd.prototype.Column;
 import sgbd.query.Operator;
 import sgbd.query.Tuple;
 import sgbd.query.unaryop.AsOperator;
-import sgbd.query.unaryop.FilterColumnsOperator;
-import sgbd.table.Table;
 import sgbd.util.Conversor;
 
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JComboBox;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.JLabel;
-import javax.swing.JButton;
-
-public class FormFrameRename extends JFrame implements ActionListener {
+public class FormFrameRename extends JDialog implements ActionListener {
 
 	private JPanel contentPane;
 	private JTextField textField;
@@ -46,40 +43,24 @@ public class FormFrameRename extends JFrame implements ActionListener {
 	private Cell parentCell;
 	private Object jCell;
 	private mxGraph graph;
-	
-	/**
-	 * Launch the application.
-	 */
-	public static void main(Object cell, List<Cell> cells,mxGraph graph) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					FormFrameRename frame = new FormFrameRename(cell,cells,graph);
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 
-	public FormFrameRename(Object cell, List<Cell> cells, mxGraph graph) {
+	public FormFrameRename(Object jCell, Map<mxCell, Cell> cells, mxGraph graph) {
 		
-		this.setVisible(true);
+		super((Window)null);
+		setModal(true);
+		setTitle("Renomeação");
 		
-		this.cell = cells.stream().filter(x -> x.getCell().equals(((mxCell)cell))).findFirst().orElse(null);
+		this.cell = cells.get(jCell);
 		parentCell = this.cell.getParents().get(0);
-		this.jCell = cell;
+		this.jCell = jCell;
 		this.graph = graph;
 		initializeGUI();
 
 	}
 	
-	/**
-	 * Create the frame.
-	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void initializeGUI() {
+		
 		setBounds(100, 100, 450, 172);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -134,6 +115,7 @@ public class FormFrameRename extends JFrame implements ActionListener {
 					.addContainerGap(79, Short.MAX_VALUE))
 		);
 		contentPane.setLayout(gl_contentPane);
+		this.setVisible(true);
 	}
 
 	@Override
@@ -164,61 +146,14 @@ public class FormFrameRename extends JFrame implements ActionListener {
               return formated.getBytes(StandardCharsets.UTF_8);
           }
 
-      }, parentCell.getSourceTableName(column)+ "_"+formatedString);
+      }, formatedString);
+		System.out.println("old " +column+" new : "+formatedString);
 	    operator.open();
-		
-
-		//System.out.println(parentCell.getColumnsName());
-		
-		List<entities.Column> aux = new ArrayList<>();
-		aux.addAll(parentCell.getColumns());
-		
-
-		System.out.println(parentCell.getColumnsName());
-		System.out.println(aux);
-
-		entities.Column auxColumn = null;
-
-		for(entities.Column column_ : aux) {
-			if(column_.getName().equals(column)) {
-				auxColumn = column_;
-			}
-		}
-		int index = aux.indexOf(auxColumn);
-		aux.get(index).setName(formatedString);
-		
-		System.out.println(parentCell.getColumnsName());
-		System.out.println(aux);
-		
-		//entities.Column auxColumn = null;
-		
-		/*
-		for(List<entities.Column> columns : List.of(parentCell.getColumns())) {
-			for(entities.Column column_ : columns) {
-				if(column_.getName().equals(column)) {
-					auxColumn = column_;
-				}
-				aux.add(column_);
-			}
-			
-		}
-		
-		int index = aux.indexOf(auxColumn);
-		System.out.println(parentCell.getColumnsName());
-
-		aux.get(index).setName(formatedString);
-		*/
-		//if(parentColumn.getName().equals(column)) {
-		//	parentColumn.setName(parentCell.getSourceTableName(column)+ "_"+formatedString);
-		//}
-		//System.out.println(parentCell.getColumnsName());
-
-	    //mudar o nome na lista de colunas da cell tbm, vai ter q criar um setter pra isso
 	    
-	    ((OperatorCell)cell).setColumns(List.of(aux), operator.getContentInfo().values());
-
+	    ((OperatorCell)cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
         ((OperatorCell) cell).setOperator(operator);
 		cell.setName("ρ  "+ formatedString);
+	    
         operator.close();
 		
         dispose();

@@ -1,35 +1,39 @@
 package util;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import entities.Column;
 import entities.TableCell;
 import enums.FileType;
 import gui.frames.forms.create.FormFrameColumnType;
-import gui.frames.forms.create.FormFramePrimaryKey;
+import gui.frames.forms.create.PrimaryKey;
 import sgbd.table.Table;
 
 public class ImportFile {
 	
-	public ImportFile(TableCell tableCell, FileType fileType, List<String> tablesName, AtomicReference<Boolean> deleteCellReference){
+	public ImportFile(TableCell tableCell, FileType fileType, List<String> tablesName, 
+					  AtomicReference<Boolean> exitReference, AtomicReference<File> lastDirectoryRef){
+		
 		
 		JFileChooser fileUpload = new JFileChooser();
+		
+		fileUpload.setCurrentDirectory(lastDirectoryRef.get());
 		
 		FileNameExtensionFilter filter = null; 
 		
@@ -53,53 +57,63 @@ public class ImportFile {
 		
 		if(res == JFileChooser.APPROVE_OPTION) {
 			
+			lastDirectoryRef.set(new File(fileUpload.getCurrentDirectory().getAbsolutePath()));
 			StringBuilder pkName = new StringBuilder();
 			StringBuilder tableName = new StringBuilder();
-			List<String> columnsName = new ArrayList<>();
-			List<List<String>> lines = new ArrayList<>();
+			Map<Integer, Map<String, String>> content = new LinkedHashMap<>();
 			List<Column> columns = new ArrayList<>();
 			
 			if(fileType == FileType.CSV) {
 			
-				csv(fileUpload, tableName, columnsName, lines, columns, tablesName, pkName, deleteCellReference);
+				csv(fileUpload, tableName, content, columns, tablesName, pkName, exitReference);
 			
 			}else if(fileType == FileType.EXCEL) {
 				
-				excel(fileUpload, tableName, columnsName, lines, columns, tablesName, pkName, deleteCellReference);
+				excel(fileUpload, tableName, content, columns, tablesName, pkName, exitReference);
 				
 			}else if(fileType == FileType.DAT) {
 				
 				AtomicReference<Table> table = new AtomicReference<>();
-				header(fileUpload, table);
-				TableCreator.importTable(tableCell, table);
+				header(fileUpload, table, exitReference);
+				
+				if(!exitReference.get())
+					TableCreator.importTable(tableCell, table);
 				
 			}
 			
-			if(!deleteCellReference.get() && FileType.DAT != fileType)
-				TableCreator.createTable(tableCell, tableName.toString(), pkName.toString(), columns, lines);
+			if(!exitReference.get() && FileType.DAT != fileType)
+				TableCreator.createTable(tableCell, tableName.toString(), pkName.toString(), columns, content, false);
 			
 		}else {
 			
-			deleteCellReference.set(true);;
+			exitReference.set(true);;
 			
 		}
 		
 	}
 	
-	private void header(JFileChooser fileUpload, AtomicReference<Table> table) {
+	private void header(JFileChooser fileUpload, AtomicReference<Table> table, AtomicReference<Boolean> exitReference) {
 		
+		if (!fileUpload.getSelectedFile().getName().toLowerCase().endsWith(".head")) {
+		  
+			JOptionPane.showMessageDialog(null, "Por favor, selecione um arquivo .head");
+		    exitReference.set(true);
+		    return;
+		
+		}
+
 		String file = fileUpload.getSelectedFile().getAbsolutePath();
 		
 		table.set(Table.loadFromHeader(file));
 		
 	}
 	
-	private void excel(JFileChooser fileUpload, StringBuilder tableName, List<String> columnsName,
-					   List<List<String>> lines, List<Column> columns, List<String> tablesName,
+	private void excel(JFileChooser fileUpload, StringBuilder tableName, 
+			Map<Integer, Map<String, String>> lines, List<Column> columns, List<String> tablesName,
 					   StringBuilder pkName, AtomicReference<Boolean> exitReference) {
-		
+		/*
 		try {
-		
+			
 			FileInputStream file = new FileInputStream(fileUpload.getSelectedFile().getAbsolutePath());
 			
 			tableName.append(fileUpload.getSelectedFile().getName().toUpperCase()
@@ -179,37 +193,69 @@ public class ImportFile {
 
 			e.printStackTrace();
 		
-		}
+		}*/
 		
 	}
 	
-	private void csv(JFileChooser fileUpload, StringBuilder tableName, List<String> columnsName,
-					 List<List<String>> lines, List<Column> columns, List<String> tablesName,
-					 StringBuilder pkName, AtomicReference<Boolean> exitReference){
+	private void csv(JFileChooser fileUpload, StringBuilder tableName,Map<Integer, Map<String, String>> content,
+						List<Column> columns, List<String> tablesName,
+						StringBuilder pkName, AtomicReference<Boolean> exitReference){
+		
+		if (!fileUpload.getSelectedFile().getName().toLowerCase().endsWith(".csv")) {
+
+			JOptionPane.showMessageDialog(null, "Por favor, selecione um arquivo CSV.");
+		    exitReference.set(true);
+		    return;
+		
+		}
 		
 		try(BufferedReader br = new BufferedReader(new FileReader(fileUpload.getSelectedFile().getAbsolutePath()))){
 			
-			columnsName.addAll(Arrays.asList(br.readLine().replace("\"", "").replace(" ", "").split(",")));
+			List<String> columnsList = Arrays.asList(br.readLine().replace("\"", "").replace(" ", "").split(","));
+	        Set<String> columnsNameSet = new LinkedHashSet<>();
+	        List<String> columnsNameList = new ArrayList<>();
+
+	        for (String column : columnsList) {
+	            if (!columnsNameSet.add(column)) {
+	                int count = 1;
+	                String newColumnName = column + count;
+	                while (columnsNameSet.contains(newColumnName)) {
+	                    count++;
+	                    newColumnName = column + count;
+	                }
+	                column = newColumnName;
+	            }
+	            columnsNameSet.add(column);
+	            columnsNameList.add(column.replaceAll("[^a-zA-Z0-9]", ""));
+	        }
+			
 			tableName.append(fileUpload.getSelectedFile().getName().toUpperCase()
 					 .substring(0, fileUpload.getSelectedFile().getName().indexOf("."))
-					 .replaceAll("[^a-zA-Z0-9_-]", ""));
+					 .replaceAll("[^a-zA-Z0-9]", ""));
 			
 			String line = br.readLine();
+			int i = 0;
 			while(line != null) {
 				
-				lines.add(Arrays.asList(line.split(",")));
+				Map<String, String> row = new LinkedHashMap<>();
 				
+				Iterator<String> columnName = columnsNameSet.iterator();
+				
+				for(String inf : line.split(",")){
+					
+					String name = columnName.next();
+					row.put(name.replaceAll("[^a-zA-Z0-9]", ""), inf);
+					
+				}
+				
+				content.put(i++, row);
 				line = br.readLine();
 			}
 			
-			List<List<String>> aux = new ArrayList<>();
-			aux.add(columnsName);
-			aux.addAll(lines);
-			
-			new FormFramePrimaryKey(aux, pkName, exitReference);
+			new PrimaryKey(content, pkName, exitReference);
 			
 			if(!exitReference.get())
-				new FormFrameColumnType(columns, aux, tableName, tablesName, exitReference);
+				new FormFrameColumnType(columns, content, tableName, tablesName, exitReference);
 			
 		}catch(IOException e) {
 			

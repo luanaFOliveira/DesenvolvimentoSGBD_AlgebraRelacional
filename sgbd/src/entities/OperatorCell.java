@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.mxgraph.model.mxCell;
+
 import entities.util.TableFormat;
 import enums.OperationType;
 import sgbd.query.Operator;
@@ -13,9 +15,9 @@ public class OperatorCell extends Cell{
 	private Operator operator;
 	private OperationType type;
 	
-	public OperatorCell(String name, String style, Object cell, OperationType type, int x,int y,int length,int width) {
+	public OperatorCell(String name, String style, mxCell jCell, OperationType type, int x,int y,int length,int width) {
 	
-		super(name, style, cell, x, y, length, width);
+		super(name, style, jCell, x, y, length, width);
 		this.operator = null;
 		this.type = type;
 		
@@ -24,7 +26,7 @@ public class OperatorCell extends Cell{
 	public void setOperator(Operator operator) {
 		
 		this.operator = operator;
-		this.content = TableFormat.getRows(operator, getColumns());
+		this.content = TableFormat.getRows(operator);
 		
 	}
 	
@@ -51,6 +53,7 @@ public class OperatorCell extends Cell{
 				for(Column column : columns) {
 					
 					if(columnsName.contains(column.getName())) {
+						
 						cellColumns.add(column);
 						
 					}

@@ -1,21 +1,29 @@
 package gui.frames.forms.operations;
 
-import java.awt.EventQueue;
+import java.awt.Color;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
@@ -27,10 +35,10 @@ import sgbd.query.unaryop.FilterColumnsOperator;
 import sgbd.table.Table;
 
 @SuppressWarnings("serial")
-public class FormFrameProjection extends JFrame implements ActionListener {
+public class FormFrameProjection extends JDialog implements ActionListener {
 
 	private JPanel contentPane;
-	private JComboBox<?> columnsComboBox;
+	private JComboBox<String> columnsComboBox;
 	private List<String> columnsList;
 
 	private JButton btnAdd;
@@ -45,28 +53,23 @@ public class FormFrameProjection extends JFrame implements ActionListener {
 	private Object jCell;
 	private mxGraph graph;
 
-	public static void main(Object cell, List<Cell> cells, mxGraph graph) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					FormFrameProjection frame = new FormFrameProjection(cell, cells, graph);
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	private AtomicReference<Boolean> exitReference;
+	private JButton btnCancel;
+	private JButton btnAddAll;
 
-	public FormFrameProjection(Object cell, List<Cell> cells, mxGraph graph) {
-		super("Projecao");
+	public FormFrameProjection(Object jCell, Map<mxCell, Cell> cells, mxGraph graph,
+			AtomicReference<Boolean> exitReference) {
 
-		this.setVisible(true);
+		super((Window) null);
+		setModal(true);
+		setTitle("Projeção");
 
-		this.cell = cells.stream().filter(x -> x.getCell().equals(((mxCell) cell))).findFirst().orElse(null);
+		this.cell = cells.get(jCell);
 		parentCell = this.cell.getParents().get(0);
-		this.jCell = cell;
+		this.jCell = jCell;
 		this.graph = graph;
+		this.exitReference = exitReference;
+
 		initializeGUI();
 
 	}
@@ -74,7 +77,7 @@ public class FormFrameProjection extends JFrame implements ActionListener {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void initializeGUI() {
 
-		setBounds(100, 100, 500, 301);
+		setBounds(100, 100, 500, 470);
 		setLocationRelativeTo(null);
 
 		contentPane = new JPanel();
@@ -87,57 +90,157 @@ public class FormFrameProjection extends JFrame implements ActionListener {
 		columnsList = parentCell.getColumnsName();
 
 		columnsComboBox = new JComboBox(columnsList.toArray(new String[0]));
+		columnsComboBox.addActionListener(this);
 
-		JLabel lblColumns = new JLabel("Columns");
+		JLabel lblColumns = new JLabel("Colunas");
 
 		JLabel lblTermos = new JLabel("Termos");
 
 		textArea = new JTextArea();
+		textArea.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+
+				verifyConditions();
+				
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+
+				verifyConditions();
+				
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+
+				verifyConditions();
+				
+			}
+			
+		});
 
 		columnsResult = new ArrayList<String>();
 
-		btnAdd = new JButton("Add");
+		btnAdd = new JButton("Adicionar");
 		btnAdd.addActionListener(this);
 
-		btnRemove = new JButton("Remover");
+		btnRemove = new JButton("Remover colunas");
 		btnRemove.addActionListener(this);
 
 		btnReady = new JButton("Pronto");
 		btnReady.addActionListener(this);
 
+		btnCancel = new JButton("Cancelar");
+		btnCancel.addActionListener(this);
+		
+		btnAddAll = new JButton("Adicionar todas");
+		btnAddAll.addActionListener(this);
+
 		GroupLayout groupLayout = new GroupLayout(contentPane);
-		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.LEADING).addGroup(groupLayout
-				.createSequentialGroup().addGap(38)
-				.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(columnsComboBox, GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblColumns, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnAdd, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnReady).addComponent(btnRemove))
-				.addPreferredGap(ComponentPlacement.RELATED, 86, Short.MAX_VALUE)
-				.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-						.addComponent(textArea, GroupLayout.PREFERRED_SIZE, 223, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblTermos))
-				.addContainerGap(32, Short.MAX_VALUE)));
-		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-				.addGroup(groupLayout.createSequentialGroup().addContainerGap()
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblColumns, GroupLayout.PREFERRED_SIZE, 14, GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblTermos))
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+		groupLayout.setHorizontalGroup(
+			groupLayout.createParallelGroup(Alignment.TRAILING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(23)
+							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
 								.addGroup(groupLayout.createSequentialGroup()
-										.addComponent(columnsComboBox, GroupLayout.PREFERRED_SIZE,
-												GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										.addGap(17).addComponent(btnAdd).addGap(17).addComponent(btnRemove).addGap(17)
-										.addComponent(btnReady))
-								.addComponent(textArea, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE))
-						.addContainerGap(532, Short.MAX_VALUE)));
+									.addComponent(btnCancel)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(btnReady))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+										.addComponent(columnsComboBox, Alignment.LEADING, 0, 444, Short.MAX_VALUE)
+										.addGroup(groupLayout.createSequentialGroup()
+											.addComponent(btnAdd, GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+											.addPreferredGap(ComponentPlacement.UNRELATED)
+											.addComponent(btnAddAll)
+											.addPreferredGap(ComponentPlacement.UNRELATED)
+											.addComponent(btnRemove, GroupLayout.PREFERRED_SIZE, 143, GroupLayout.PREFERRED_SIZE))
+										.addComponent(textArea, GroupLayout.DEFAULT_SIZE, 444, Short.MAX_VALUE))
+									.addGap(11))))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(205)
+							.addComponent(lblTermos)))
+					.addContainerGap())
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap(211, Short.MAX_VALUE)
+					.addComponent(lblColumns, GroupLayout.PREFERRED_SIZE, 99, GroupLayout.PREFERRED_SIZE)
+					.addGap(180))
+		);
+		groupLayout.setVerticalGroup(
+			groupLayout.createParallelGroup(Alignment.LEADING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addComponent(lblColumns, GroupLayout.PREFERRED_SIZE, 14, GroupLayout.PREFERRED_SIZE)
+					.addGap(17)
+					.addComponent(columnsComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(18)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnAdd)
+						.addComponent(btnRemove)
+						.addComponent(btnAddAll))
+					.addGap(37)
+					.addComponent(lblTermos)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(textArea, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED, 55, Short.MAX_VALUE)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnReady)
+						.addComponent(btnCancel))
+					.addContainerGap())
+		);
 		contentPane.setLayout(groupLayout);
+		verifyConditions();
+
+		addWindowListener(new WindowAdapter() {
+
+			public void windowClosing(WindowEvent e) {
+
+				exitReference.set(true);
+				dispose();
+
+			}
+
+		});
+		
+		this.setVisible(true);
+
+	}
+
+	private void verifyConditions() {
+
+		boolean noneSelection = textArea.getText().isEmpty();
+
+		btnReady.setEnabled(!noneSelection);
+
+		updateToolTipText(noneSelection);
+
+	}
+
+	private void updateToolTipText(boolean noneSelection) {
+
+		String btnReadyToolTipText = new String();
+
+		if (noneSelection) {
+
+			btnReadyToolTipText = "- Selecione pelo menos uma coluna";
+
+		} 
+		
+		UIManager.put("ToolTip.foreground", Color.RED);
+
+		btnReady.setToolTipText(btnReadyToolTipText.isEmpty() ? null : btnReadyToolTipText);
+
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-
+		
+		verifyConditions();
+		
 		if (e.getSource() == btnAdd) {
 
 			if (columnsComboBox.getItemCount() > 0) {
@@ -147,7 +250,14 @@ public class FormFrameProjection extends JFrame implements ActionListener {
 			}
 
 		} else if (e.getSource() == btnRemove) {
-			textArea.setText(textArea.getText().replace(textArea.getSelectedText(),""));
+
+			textArea.setText("");
+
+			columnsComboBox.removeAllItems();
+
+			for (String item : columnsList)
+				columnsComboBox.addItem(item);
+
 		} else if (e.getSource() == btnReady) {
 
 			columnsResult = new ArrayList<>(List.of(textArea.getText().split("\n")));
@@ -155,6 +265,21 @@ public class FormFrameProjection extends JFrame implements ActionListener {
 			graph.getModel().setValue(jCell, "π  " + columnsResult.toString());
 			executeOperation();
 
+		} else if (e.getSource() == btnCancel) {
+
+			exitReference.set(true);
+			dispose();
+
+		}else if(e.getSource() == btnAddAll) {
+			
+			while(columnsComboBox.getItemCount() != 0) {
+				
+				textColumnsPicked = textArea.getText() + "\n" + columnsComboBox.getSelectedItem().toString();
+				columnsComboBox.removeItemAt(columnsComboBox.getSelectedIndex());
+				textArea.setText(textColumnsPicked);
+				
+			}
+			
 		}
 	}
 

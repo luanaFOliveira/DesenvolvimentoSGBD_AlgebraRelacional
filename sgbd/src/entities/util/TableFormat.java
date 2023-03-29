@@ -1,69 +1,64 @@
 package entities.util;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-import entities.Column;
-import enums.ColumnDataType;
 import sgbd.prototype.ComplexRowData;
 import sgbd.query.Operator;
 import sgbd.query.Tuple;
+import sgbd.util.Util;
 
 public class TableFormat {
 
-	public static List<List<String>> getRows(Operator operator, List<Column> columns){
-		
-		Operator aux = operator;
-		aux.open();
-		
-		List<List<String>> rows = new ArrayList<>();
-		
-		Tuple tuple = aux.hasNext() ? aux.next() : null;
-		
-	    while(aux.hasNext() || tuple != null){
-	    	
+	public static Map<Integer, Map<String, String>> getRows(Operator operator) {
+	    Operator aux = operator;
+	    aux.open();
+
+	    Set<String> possibleKeys = new HashSet<>(); 
+	    Map<Integer, Map<String, String>> rows = new HashMap<>();
+
+	    Tuple tuple = aux.hasNext() ? aux.next() : null;
+	    int i = 0;
+	    while (aux.hasNext() || tuple != null) {
 	        Tuple t = tuple == null ? aux.next() : tuple;
 
-	        List<String> row = new ArrayList<>();
-	        
-	        for (Map.Entry<String, ComplexRowData> line : t){
-	    		
-	            for(Map.Entry<String,byte[]> data:line.getValue()) {
-	            	
-	            	Column column = columns.stream().filter(x -> x.getName().toLowerCase().contains(data.getKey().toLowerCase())).findFirst().orElse(null);
-	            	
-	            	if(column.getType() == ColumnDataType.STRING){
-	            		
-	            		row.add(line.getValue().getString(data.getKey()));
-	            	
-	            	}else if(column.getType() == ColumnDataType.INTEGER){
-			        
-	            		row.add(line.getValue().getInt(data.getKey()).toString());
+	        Map<String, String> row = new HashMap<>();
 
-	            	}else if(column.getType() == ColumnDataType.FLOAT) {
-	            		
-	            		row.add(line.getValue().getFloat(data.getKey()).toString());
-	            		
-	            	}else {
-	            		
-	            		row.add(line.getValue().getString(data.getKey()));
-	            		
-	            	}
-	            		
+	        for (Map.Entry<String, ComplexRowData> line : t) {
+	            for (Map.Entry<String, byte[]> data : line.getValue()) {
+	            	possibleKeys.add(data.getKey());
+	            	switch(Util.typeOfColumn(line.getValue().getMeta(data.getKey()))) {
+	                    case "int":
+	                        row.put(data.getKey(), line.getValue().getInt(data.getKey()).toString());
+	                        break;
+	                    case "float":
+	                        row.put(data.getKey(), line.getValue().getFloat(data.getKey()).toString());
+	                        break;
+	                    case "string":
+	                    default:
+	                        row.put(data.getKey(), line.getValue().getString(data.getKey()));
+	                }
 	            }
-	    
 	        }
-	        
-	        rows.add(row);
+
+	        rows.put(i, row);
 	        tuple = null;
-	        
+	        i++;
+	    }
+
+	    aux.close();
+
+	    for (Map<String, String> row : rows.values()) {
+	        for (String key : possibleKeys) {
+	            if (!row.containsKey(key)) {
+	                row.put(key, "");
+	            }
+	        }
 	    }
 	    
-	    aux.close();
-	    
 	    return rows;
-		
 	}
-	
+
 }

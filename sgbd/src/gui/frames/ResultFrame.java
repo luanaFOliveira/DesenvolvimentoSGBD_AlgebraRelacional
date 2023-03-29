@@ -2,10 +2,6 @@ package gui.frames;
 
 import java.awt.EventQueue;
 import java.awt.Window;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.GroupLayout;
@@ -18,9 +14,6 @@ import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 
 import entities.Cell;
-import sgbd.prototype.ComplexRowData;
-import sgbd.query.Operator;
-import sgbd.query.Tuple;
 
 @SuppressWarnings("serial")
 public class ResultFrame extends JDialog{
@@ -42,28 +35,49 @@ public class ResultFrame extends JDialog{
 	}
 	
 	public ResultFrame(Cell cell) {
+	
 		super((Window)null);
 		setModal(true);
 		
-		List<List<String>> data = cell.getContent();
-        String[] columnsNameArray = cell.getColumnsName().stream().toArray(String[]::new); 
+		Map<Integer, Map<String, String>> data = cell.getMapContent();
 		
-        System.out.println(data.toString().toString());
-        
+		
+		
 		if(data != null && !data.isEmpty() && !data.get(0).isEmpty()) {
 			
-		
-			String[][] dataArray = data.stream()
-	                .map(l -> l.stream().toArray(String[]::new))
-	                .toArray(String[][]::new);;
-	                
-			sortColumns(cell.getData(), columnsNameArray);
+			String[] columnsNameArray = new String[data.get(0).size()];
+			
+			int i = 0;
+			for(String columnName: data.get(0).keySet()) {
+				
+				columnsNameArray[i] = columnName;
+				i++;
+				
+			}
+			
+			String[][] dataArray = new String[data.size()][];
+			int j = 0;
+		    for(Map<String, String> row : data.values()) {
+		    	
+		    	String[] line = new String[data.get(0).size()];
+		    	int k = 0;
+		    	for(String key : row.keySet()) {
+		    		
+		    		line[k] = row.get(key);
+		    		k++;
+		    		
+		    	}
+		    	
+		    	dataArray[j] = line;
+		    	j++;
+		    }
+			
 			
 			table = new JTable(dataArray, columnsNameArray);
 		
 		}else {
 			
-			table = new JTable(new String[0][], columnsNameArray);
+			table = new JTable(new String[0][], cell.getColumnsName().stream().toArray(String[]::new));
 			
 		}
 		
@@ -86,7 +100,6 @@ public class ResultFrame extends JDialog{
 		JScrollPane scrollPane = new JScrollPane(table);
 		
 		JLabel lblNewLabel = new JLabel("Resultado");
-		
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
 		gl_contentPane.setHorizontalGroup(
 			gl_contentPane.createParallelGroup(Alignment.LEADING)
@@ -108,24 +121,6 @@ public class ResultFrame extends JDialog{
 		
 		contentPane.setLayout(gl_contentPane);
 		this.setVisible(true);
-	}
-
-	private void sortColumns(Operator op, String[] columnsName) {
-		
-	    Operator aux = op;
-	    aux.open();
-
-	    Tuple tuple = aux.next();
-	    List<String> keyOrder = new ArrayList<String>();
-
-        for (Map.Entry<String, ComplexRowData> line : tuple) {
-            for (Map.Entry<String, byte[]> data : line.getValue()) {
-                keyOrder.add(data.getKey());
-            }
-        }
-
-	    Arrays.sort(columnsName, Comparator.comparingInt(keyOrder::indexOf));
-	    aux.close();
 	}
 
 }

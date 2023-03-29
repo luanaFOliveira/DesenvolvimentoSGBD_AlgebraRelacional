@@ -3,7 +3,8 @@ package gui.frames.forms.importexport;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
+import java.io.File;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.mxgraph.model.mxCell;
@@ -18,9 +19,12 @@ public class FormFrameExportAs extends FormFrameImportExportAs implements Action
 
 	private mxGraphComponent graph;
 	private mxCell jCell;
-	private List<Cell> cells;
+	private Map<mxCell, Cell> cells;
+	private AtomicReference<Boolean> cancelService;
+	private AtomicReference<File> lastDirectoryRef;
 	
-	public FormFrameExportAs(mxCell cell, mxGraphComponent graph, List<Cell> cells) {
+	public FormFrameExportAs(mxCell cell, mxGraphComponent graph, Map<mxCell, Cell> cells, AtomicReference<Boolean> cancelService,
+							 AtomicReference<File> lastDirectoryRef) {
 
 		super((Window)null);
 		setModal(true);
@@ -28,6 +32,8 @@ public class FormFrameExportAs extends FormFrameImportExportAs implements Action
 		this.cells = cells;
 		this.jCell = cell;
 		this.graph = graph;
+		this.cancelService = cancelService;
+		this.lastDirectoryRef= lastDirectoryRef; 
 		
 		this.setVisible(true);
 
@@ -38,6 +44,7 @@ public class FormFrameExportAs extends FormFrameImportExportAs implements Action
 		
 		if(e.getSource() == btnCancel) {
 			
+			cancelService.set(true);
 			dispose();
 			
 		}else if(e.getSource() == btnCsv) {
@@ -46,8 +53,10 @@ public class FormFrameExportAs extends FormFrameImportExportAs implements Action
 			
 			AtomicReference<Cell> cell = new AtomicReference<>();
 			
-			new FormFrameSelectCell(jCell, graph, cells, cell);
-			new ExportTable(cell, FileType.CSV);
+			new FormFrameSelectCell(jCell, graph, cells, cell, cancelService);
+			
+			if(!cancelService.get())
+				new ExportTable(cell, FileType.CSV, cancelService, lastDirectoryRef);
 			
 		}else if(e.getSource() == btnXlsXlsxOdt) {
 			
@@ -63,8 +72,10 @@ public class FormFrameExportAs extends FormFrameImportExportAs implements Action
 			
 			AtomicReference<Cell> cell = new AtomicReference<>();
 			
-			new FormFrameSelectCell(jCell, graph, cells, cell);
-			new ExportTable(cell, FileType.DAT);
+			new FormFrameSelectCell(jCell, graph, cells, cell, cancelService);
+			
+			if(!cancelService.get())
+				new ExportTable(cell, FileType.DAT, cancelService, lastDirectoryRef);
 			
 		}
 		

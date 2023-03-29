@@ -1,12 +1,16 @@
 package entities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
+import com.mxgraph.model.mxCell;
+
 import entities.util.FindRoots;
-import enums.OperationTypeEnums;
+import enums.OperationArity;
 import sgbd.query.Operator;
 
 public abstract class Cell {
@@ -14,22 +18,22 @@ public abstract class Cell {
 	protected List<Column> columns;
 	private String style;
 	private String name;
-	private Object cell;
+	private mxCell jCell;
 	protected List<Cell> parents;
 	private Cell child;
 	private int x;
 	private int y;
 	private int length;
 	private int width;
-	protected List<List<String>> content;
+	protected Map<Integer, Map<String, String>> content;
 	
-	public Cell(String name, String style, Object cell, int x, int y, int length, int width) {
+	public Cell(String name, String style, mxCell jCell, int x, int y, int length, int width) {
 		
 		this.columns = new ArrayList<>();
 		this.parents = new ArrayList<>();
 		this.style = style;
 		this.name = name;
-		this.cell = cell;
+		this.jCell = jCell;
 		this.child= null;
 		this.x = x;
 		this.y = y;
@@ -38,8 +42,13 @@ public abstract class Cell {
 		
 	}
 	
-	public void setJGraphCell(Object cell) {
-		this.cell = cell;
+	
+	public mxCell getJGraphCell() {
+		return jCell;
+	}
+	
+	public void setJGraphCell(mxCell jCell) {
+		this.jCell = jCell;
 	}
 	
 	public Cell getChild() {
@@ -84,16 +93,36 @@ public abstract class Cell {
 		
 	}
 	
-	public List<List<String>> getContent(){
+	public List<String> getOnlyColumnsName(){
+		
+		List<String> names = new ArrayList<>();
+		
+		columns.forEach(x -> names.add(x.getName().substring(x.getName().indexOf("_")+1)));
+		
+		return names;
+		
+	}
+	
+	public Map<Integer, Map<String, String>> getMapContent(){
 		
 		return content;
 		
 	}
 	
-	public Object getCell() {
-		return cell;
+	public List<List<String>> getListContent() {
+		
+	    List<List<String>> result = new ArrayList<>();
+	    for (Map.Entry<Integer, Map<String, String>> entry : content.entrySet()) {
+	        List<String> row = new ArrayList<>();
+	        for (String value : entry.getValue().values()) {
+	            row.add(value);
+	        }
+	        result.add(row);
+	    }
+	    return result;
+	    
 	}
-	
+
 	public void addParent(Cell parent) {
 		parents.add(parent);
 	}
@@ -149,9 +178,9 @@ public abstract class Cell {
 		
 	}
 	
-	public Boolean checkRules(OperationTypeEnums type) {
+	public Boolean checkRules(OperationArity type) {
 	
-		if(type == OperationTypeEnums.UNARY) {
+		if(type == OperationArity.UNARY) {
 			
 			if(this.getParents().size() != 1) {
 				
@@ -160,7 +189,7 @@ public abstract class Cell {
 			
 			}
 			
-		}else if(type == OperationTypeEnums.BINARY){
+		}else if(type == OperationArity.BINARY){
 			
 			if(this.getParents().size() > 2) {
 				
@@ -177,6 +206,81 @@ public abstract class Cell {
 		return true;
 	
 	}
+	
+	
+	public String console() {
+		
+	    Map<Integer, Map<String, String>> content = getMapContent();
+
+	    Map<String, Integer> columnWidths = new HashMap<>();
+	    for (Map<String, String> row : content.values()) {
+	        for (Map.Entry<String, String> entry : row.entrySet()) {
+	            String column = entry.getKey();
+	            String value = entry.getValue();
+	            int width = Math.max(columnWidths.getOrDefault(column, 0), value.length());
+	            columnWidths.put(column, width);
+	        }
+	    }
+
+	    StringBuilder tableFormatted = new StringBuilder();
+	    tableFormatted.append("+");
+	    for (String column : getColumnsName()) {
+	        int width = columnWidths.get(column);
+	        tableFormatted.append("-");
+	        for (int i = 0; i < width + 2; i++) {
+	            tableFormatted.append("-");
+	        }
+	        tableFormatted.append("+");
+	    }
+	    tableFormatted.append("\n");
+
+	    tableFormatted.append("|");
+	    for (String column : getColumnsName()) {
+	        int width = columnWidths.get(column);
+	        tableFormatted.append(" ");
+	        tableFormatted.append(String.format("%-" + width + "s", column));
+	        tableFormatted.append(" |");
+	    }
+	    tableFormatted.append("\n");
+
+	    tableFormatted.append("+");
+	    for (String column : getColumnsName()) {
+	        int width = columnWidths.get(column);
+	        tableFormatted.append("-");
+	        for (int i = 0; i < width + 2; i++) {
+	            tableFormatted.append("-");
+	        }
+	        tableFormatted.append("+");
+	    }
+	    tableFormatted.append("\n");
+
+	    for (Map<String, String> row : content.values()) {
+	        tableFormatted.append("|");
+	        for (String column : getColumnsName()) {
+	            String value = row.getOrDefault(column, "");
+	            int width = columnWidths.get(column);
+	            tableFormatted.append(" ");
+	            tableFormatted.append(String.format("%-" + width + "s", value));
+	            tableFormatted.append(" |");
+	        }
+	        tableFormatted.append("\n");
+	    }
+
+	    tableFormatted.append("+");
+	    for (String column : getColumnsName()) {
+	        int width = columnWidths.get(column);
+	        tableFormatted.append("-");
+	        for (int i = 0; i < width + 2; i++) {
+	            tableFormatted.append("-");
+	        }
+	        tableFormatted.append("+");
+	    }
+	    tableFormatted.append("\n");
+
+	    return tableFormatted.toString();
+	}
+
+
 	
 	public abstract Operator getData();
 	
