@@ -119,7 +119,6 @@ public class ExportTable extends JPanel {
 			TableCreator.createTable(createdCell, fileName, pkName, cell.getColumns(), cell.getMapContent(), true);
 
 			createdCell.getTable().saveHeader(headFileName);
-			createdCell.getTable().close();
 
 			Path source = Paths.get(headFileName);
 			String datFileName = fileName + ".dat";

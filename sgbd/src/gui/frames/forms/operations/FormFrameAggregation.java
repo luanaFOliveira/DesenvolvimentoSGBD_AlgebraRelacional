@@ -121,13 +121,13 @@ public class FormFrameAggregation extends JDialog implements ActionListener {
 	public void executeOperation(String column, String op) {
 
 		Operator operator = parentCell.getData();
-
+		
+		operator.open();
+		
 		// if(op == "max") operator = new GroupOperator(new
 		// MaxOperator(parentCell.getData(),parentCell.getSourceTableName(column),column),parentCell.getSourceTableName(column),column);
 		// else if(op == "min") operator = new GroupOperator(new
 		// MinOperator(parentCell.getData(),parentCell.getSourceTableName(column),column),parentCell.getSourceTableName(column),column);
-
-		operator.open();
 
 		((OperatorCell) cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
 

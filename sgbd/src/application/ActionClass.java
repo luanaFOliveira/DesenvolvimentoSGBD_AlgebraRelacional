@@ -375,7 +375,9 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 
 				cells.put(newCell, new OperatorCell(name, style, newCell, currentType, e.getX(), e.getY(), 80, 30));
 			}
-
+			
+			cells.get(newCell).setIndex(cells.size());;
+			
 			createCell = false;
 
 		}
@@ -447,10 +449,17 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 				}
 
 				if (exitRef.get()) {
-
+					
+					Cell deletedCell = cells.get(jCell);
+					
+					for(Cell parent : deletedCell.getParents()) {
+						parent.setChild(null);
+					}
+					
+					deletedCell.clearParents();
+					
 					cells.remove(jCell);
 					deleteCell(jCell);
-					parentCell.setChild(null);
 
 				}
 
@@ -544,12 +553,37 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 
 				deleteCell(jCell);
 				
-			} else if (e.getKeyCode() == KeyEvent.VK_J) {
+			}  else if (e.getKeyCode() == KeyEvent.VK_T) {
+
+				System.out.println(cells.get(jCell).getAllSourceTables());
+				
+			} else if (e.getKeyCode() == KeyEvent.VK_P) {
+
+				cells.get(jCell).getParents().forEach(x -> {
+					System.out.print(x.getIndex()+" ");
+				});
+				System.out.println();
+				
+			} else if (e.getKeyCode() == KeyEvent.VK_I) {
+
+				System.out.println(cells.get(jCell).getIndex());
+				
+			}
+
+		}
+		
+		if(!cells.isEmpty()) {
+			
+			if(e.getKeyCode() == KeyEvent.VK_E) {
+				
+				createEdge = true;
+				
+			}else if (e.getKeyCode() == KeyEvent.VK_J) {
 
 				graphComponent.getGraph().selectAll();
 
 			}
-
+			
 		}
 
 	}

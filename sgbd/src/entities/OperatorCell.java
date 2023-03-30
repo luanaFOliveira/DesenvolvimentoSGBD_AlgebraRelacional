@@ -25,8 +25,9 @@ public class OperatorCell extends Cell{
 	
 	public void setOperator(Operator operator) {
 		
-		this.operator = operator;
-		this.content = TableFormat.getRows(operator);
+		Operator op = operator;
+		this.operator = op;
+		this.content = TableFormat.getRows(op);
 		
 	}
 	

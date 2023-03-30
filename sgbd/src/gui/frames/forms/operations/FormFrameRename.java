@@ -133,6 +133,8 @@ public class FormFrameRename extends JDialog implements ActionListener {
 		
 		Operator operator = parentCell.getData();
 		
+		operator.open();
+		
 		operator = new AsOperator(operator,(Conversor) new Conversor() {
           @Override
           public Column metaInfo(Tuple t) {

@@ -28,7 +28,6 @@ public class TableCell extends Cell{
 	
 	public void setContent() {
 		
-		table.open();
 		content = TableFormat.getRows(new TableScan(table, getColumnsName()));
 	
 	}

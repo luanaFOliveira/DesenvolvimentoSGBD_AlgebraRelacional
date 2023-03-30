@@ -21,6 +21,7 @@ public abstract class Cell {
 	private mxCell jCell;
 	protected List<Cell> parents;
 	private Cell child;
+	private int index;
 	private int x;
 	private int y;
 	private int length;
@@ -40,8 +41,27 @@ public abstract class Cell {
 		this.length = length;
 		this.width = width;
 		
+		
+		
 	}
 	
+	public void setIndex(int i) {
+		
+		this.index = i;
+		
+	}
+	
+	public int getIndex() {
+		
+		return index;
+		
+	}
+	
+	public void clearParents() {
+		
+		this.parents = new ArrayList<>();
+	
+	}
 	
 	public mxCell getJGraphCell() {
 		return jCell;
@@ -280,7 +300,12 @@ public abstract class Cell {
 	    return tableFormatted.toString();
 	}
 
-
+	@Override
+	public String toString() {
+		
+		return getName();
+		
+	}
 	
 	public abstract Operator getData();
 	

@@ -16,12 +16,19 @@ public class FindRoots {
 	}
 	
     public static void getSourcesRecursive(Cell cell, List<Cell> sources) {
+    	
         if (cell.getParents().isEmpty()) {
+        	
             sources.add(cell);
+            
         } else {
+        	
             for (Cell parent : cell.getParents()) {
+            	
                 getSourcesRecursive(parent, sources);
+                
             }
+            
         }
     }
 	
