@@ -48,7 +48,7 @@ public class FormFrameProjection extends JDialog implements ActionListener {
 	private JTextArea textArea;
 
 	private List<String> columnsResult;
-	private Cell cell;
+	private OperatorCell cell;
 	private Cell parentCell;
 	private Object jCell;
 	private mxGraph graph;
@@ -64,7 +64,7 @@ public class FormFrameProjection extends JDialog implements ActionListener {
 		setModal(true);
 		setTitle("Projeção");
 
-		this.cell = cells.get(jCell);
+		this.cell = (OperatorCell) cells.get(jCell);
 		parentCell = this.cell.getParents().get(0);
 		this.jCell = jCell;
 		this.graph = graph;
@@ -271,11 +271,10 @@ public class FormFrameProjection extends JDialog implements ActionListener {
 		List<String> aux = parentCell.getColumnsName();
 		aux.removeAll(columnsResult);
 
-		Operator operator = parentCell.getData();
+		Operator operator = parentCell.getOperator();
 		
-		for (Table table : parentCell.getData().getSources()) {
+		for (Table table : parentCell.getOperator().getSources()) {
 			
-			System.out.println(table.getTableName());
 			operator = new FilterColumnsOperator(operator, table.getTableName(), aux);
 			
 		}

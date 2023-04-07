@@ -13,7 +13,7 @@ import sgbd.query.binaryop.joins.BlockNestedLoopJoin;
 
 public class CartesianProduct {
 
-	private Cell cell;
+	private OperatorCell cell;
 	private Cell parentCell1;
 	private Cell parentCell2;
 	private Object jCell;
@@ -21,7 +21,7 @@ public class CartesianProduct {
 
 	public CartesianProduct(Object jCell, Map<mxCell, Cell> cells, mxGraph graph) {
 
-		this.cell = cells.get(jCell);
+		this.cell = (OperatorCell) cells.get(jCell);
 		this.parentCell1 = this.cell.getParents().get(0);
 		this.parentCell2 = this.cell.getParents().get(1);
 		this.jCell = jCell;
@@ -32,9 +32,8 @@ public class CartesianProduct {
 
 	public void executeOperation() {
 
-		Operator table1 = parentCell1.getData();
-		Operator table2 = parentCell2.getData();
-
+		Operator table1 = parentCell1.getOperator();
+		Operator table2 = parentCell2.getOperator();
 		
 		Operator operator = new BlockNestedLoopJoin(table1, table2, (t1, t2) -> {
 			return true;
