@@ -123,9 +123,9 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		/*
 		 * btnTypeAggregation = new TypesButtons(stylesheet, "G Agregação",
 		 * "Agregação");
-		 * 
+		 *
 		 * /* tipoDiferenca = new TypesButtons(stylesheet,"- Diferenca","diferenca");
-		 * 
+		 *
 		 * btnTypeRename = new TypesButtons(stylesheet, "ρ Renomeação", "Renomeação");
 		 *
 		 */
@@ -202,18 +202,18 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		setVisible(true);
 
 	}
-	
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
 		Button btnClicked = buttons.stream().filter(x -> x.getButton() == e.getSource()).findAny().orElse(null);
-		
+
 		if(btnClicked != null) {
-			
+
 			btnClicked.setCurrentAction(currentActionRef);
-			
+
 			switch (currentActionRef.get().getType()) {
-			
+
 			case DELETE_CELL:
 				CellUtils.deleteCell(jCell);
 				break;
@@ -233,22 +233,22 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 				createTable();
 			default:
 				break;
-				
+
 			}
-			
+
 		}
-		
+
 		if(e.getSource() == menuItemShow) {
-			
+
 			CellUtils.showTable(jCell);
-			
+
 		}else if(e.getSource() == menuItemEdit) {
-			
+
 			AtomicReference<Boolean> exitRef = new AtomicReference<>(false);
 			((OperationCell)cells.get(jCell)).editOperation(jCell, exitRef);
-			
+
 		}
-		
+
 		edge.reset();
 
 	}
@@ -259,14 +259,14 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		jCell = (mxCell) graphComponent.getCellAt(e.getX(), e.getY());
 
 		if (e.getButton() == MouseEvent.BUTTON3 && cells.get(jCell) != null) {
-			
+
 			popupMenuJCell.add(menuItemEdit);
-			
-			if(cells.get(jCell) instanceof TableCell || ((OperationCell)cells.get(jCell)).getType() == OperationType.CARTESIANPRODUCT) 
+
+			if(cells.get(jCell) instanceof TableCell || ((OperationCell)cells.get(jCell)).getType() == OperationType.CARTESIANPRODUCT)
 				popupMenuJCell.remove(menuItemEdit);
-				
-			popupMenuJCell.show(graphComponent.getGraphControl(), e.getX(), e.getY());	
-			
+
+			popupMenuJCell.show(graphComponent.getGraphControl(), e.getX(), e.getY());
+
 		}
 
 		AtomicReference<Boolean> exitRef = new AtomicReference<>(false);
@@ -346,7 +346,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 			currentActionRef.set(null);
 
 		}
-		
+
 		TreeUtils.identifyTrees(trees);
 
 	}
@@ -361,19 +361,19 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	}
 
 	private void selectMultipleCells(MouseEvent e) {
-		
+
 		Object[] auxList = new Object[selectedCells.size()];
-		
+
 		for(int i=0;i<selectedCells.size();i++) {
 			Cell aux = selectedCells.get(i);
 			auxList[i] = aux;
-			
+
 		}
 	    graph.getModel().beginUpdate();
 		graph.moveCells(auxList,e.getX() ,e.getY() , true);
 	    graph.getModel().endUpdate();
 
-		
+
 	}
 
 
@@ -382,13 +382,13 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 		jCell = (mxCell) graphComponent.getCellAt(e.getX(), e.getY());
 		Cell cell = cells.get(jCell);
 		if(selectMultipleCellsBool == true) {
-			selectedCells.add(cell);				
+			selectedCells.add(cell);
 		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		
+
 	}
 
 	@Override
@@ -416,7 +416,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 
 		} else if (e.getKeyCode() == KeyEvent.VK_DELETE) {
 
-			if (jCell != null) 
+			if (jCell != null)
 				CellUtils.deleteCell(jCell);
 
 		} else if (e.getKeyCode() == KeyEvent.VK_E) {
@@ -449,11 +449,11 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 			System.out.println();
 
 		}else if(e.getKeyCode() == KeyEvent.VK_A) {
-			
-		
+
+
 		}else if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
 			selectMultipleCellsBool = true;
-			
+
 		}
 	}
 
@@ -468,7 +468,7 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	public static mxGraph getGraph() {
 		return graphComponent.getGraph();
 	}
-	
+
 	public static mxGraphComponent getGraphComponent() {
 		return graphComponent;
 	}
@@ -480,5 +480,5 @@ public class ActionClass extends JFrame implements ActionListener, MouseListener
 	public static Map<Integer, Tree> getTrees() {
 		return trees;
 	}
-	
+
 }
