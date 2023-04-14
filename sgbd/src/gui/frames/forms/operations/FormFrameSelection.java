@@ -11,7 +11,6 @@ import java.awt.event.WindowEvent;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,10 +30,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
 
 import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxGraph;
 
+import controller.ActionClass;
 import entities.Cell;
-import entities.OperatorCell;
+import entities.OperationCell;
 import enums.ColumnDataType;
 import net.sourceforge.jeval.EvaluationException;
 import net.sourceforge.jeval.Evaluator;
@@ -43,7 +42,7 @@ import sgbd.query.Tuple;
 import sgbd.query.unaryop.FilterOperator;
 
 @SuppressWarnings("serial")
-public class FormFrameSelection extends JDialog implements ActionListener, DocumentListener {
+public class FormFrameSelection extends JDialog implements ActionListener, DocumentListener, IOperator {
 
 	private List<String> columnsList;
 
@@ -66,30 +65,28 @@ public class FormFrameSelection extends JDialog implements ActionListener, Docum
 	private JButton btnReady;
 	private JButton btnCancel;
 
-	private Cell cell;
+	private OperationCell cell;
 	private Cell parentCell;
 
-	private Evaluator evaluator;
-
-	private Object jCell;
-	private mxGraph graph;
+	private mxCell jCell;
 	private JPanel panel;
-	
+
 	private AtomicReference<Boolean> exitRef;
 
-	public FormFrameSelection(Object jCell, Map<mxCell, Cell> cells, mxGraph graph, AtomicReference<Boolean> exitRef) {
+	public FormFrameSelection() {
+		
+	}
+	
+	public FormFrameSelection(mxCell jCell, AtomicReference<Boolean> exitRef) {
 
 		super((Window) null);
 		setModal(true);
 		setTitle("Seleção");
 
-		this.cell = cells.get(jCell);
+		this.cell = (OperationCell) ActionClass.getCells().get(jCell);
 		parentCell = this.cell.getParents().get(0);
 		this.jCell = jCell;
-		this.graph = graph;
 		this.exitRef = exitRef;
-
-		this.evaluator = new Evaluator();
 
 		initializeGUI();
 
@@ -106,7 +103,6 @@ public class FormFrameSelection extends JDialog implements ActionListener, Docum
 
 		textArea = new JTextArea();
 		textArea.getDocument().addDocumentListener(this);
-		;
 		textArea.setMaximumSize(new Dimension(750, 50));
 		textArea.setEditable(false);
 		centerPane.add(textArea);
@@ -276,13 +272,13 @@ public class FormFrameSelection extends JDialog implements ActionListener, Docum
 
 				exitRef.set(true);
 				dispose();
-				
+
 			}
 
 		});
-		
+
 		this.setVisible(true);
-		
+
 	}
 
 	@Override
@@ -346,78 +342,101 @@ public class FormFrameSelection extends JDialog implements ActionListener, Docum
 
 		if (e.getSource() == btnReady) {
 
-			executeOperation();
-
-			graph.getModel().setValue(jCell, "σ  " + textArea.getText());
+			executeOperation(jCell, List.of(textArea.getText()));
 
 		}
-		
-		if(e.getSource() == btnCancel) {
-			
+
+		if (e.getSource() == btnCancel) {
+
 			exitRef.set(true);
 			dispose();
-			
+
 		}
 
 	}
 
-	public void executeOperation() {
-
-		String[] formattedInput = formatString(textArea.getText()).split(" ");
-
-		Operator operator = new FilterOperator(parentCell.getData(), (Tuple t) -> {
-
-			for (String element : formattedInput) {
+	public void executeOperation(mxCell jCell, List<String> data) {
+		
+		OperationCell cell = (OperationCell) ActionClass.getCells().get(jCell);
+		
+		try {
+			
+			if (data == null || data.size() != 1 || !cell.hasParents() || cell.getParents().size() != 1 || cell.hasParentErrors()) {
 				
-				if (isColumn(element)) {
-
-					String columnName = element.substring(2, element.length() - 1);
-
-					ColumnDataType type = parentCell.getColumns().stream()
-							.filter(col -> col.getName().equals(columnName)).findFirst().get().getType();
-
-					String data;
-
-					if (type == ColumnDataType.INTEGER) {
-
-						data = String
-								.valueOf(t.getContent(parentCell.getSourceTableName(columnName)).getInt(columnName));
-
-					} else if (type == ColumnDataType.FLOAT) {
-
-						data = String
-								.valueOf(t.getContent(parentCell.getSourceTableName(columnName)).getFloat(columnName));
-
-					} else {
-
-						data = "'" + t.getContent(parentCell.getSourceTableName(columnName)).getString(columnName)
-								+ "'";
-
+				throw new Exception();
+			
+			}
+	
+			Evaluator evaluator = new Evaluator();
+			
+			Cell parentCell = cell.getParents().get(0);
+	
+			String expression = data.get(0);
+			String[] formattedInput = formatString(expression).split(" ");
+	
+			Operator operator = new FilterOperator(parentCell.getOperator(), (Tuple t) -> {
+	
+				for (String element : formattedInput) {
+	
+					if (isColumn(element)) {
+	
+						String columnName = element.substring(2, element.length() - 1);
+	
+						ColumnDataType type = parentCell.getColumns().stream()
+								.filter(col -> col.getName().equals(columnName)).findFirst().get().getType();
+	
+						String inf;
+	
+						if (type == ColumnDataType.INTEGER) {
+	
+							inf = String
+									.valueOf(t.getContent(parentCell.getSourceTableName(columnName)).getInt(columnName));
+	 
+						} else if (type == ColumnDataType.FLOAT) {
+	
+							inf = String
+									.valueOf(t.getContent(parentCell.getSourceTableName(columnName)).getFloat(columnName));
+	
+						} else {
+	
+							inf = "'" + t.getContent(parentCell.getSourceTableName(columnName)).getString(columnName) + "'";
+	
+						}
+	
+						if (data == null)
+							return false;
+	
+						evaluator.putVariable(columnName, inf);
+	
 					}
-					
-					if(data == null) return false;
-					
-					evaluator.putVariable(columnName, data);
-
 				}
-			}
-
-			try {
-
-				return evaluator.evaluate(formatString(textArea.getText())).equals("1.0");
-
-			} catch (EvaluationException e) {
+	
+				try {
+	
+					return evaluator.evaluate(formatString(expression)).equals("1.0");
+	
+				} catch (EvaluationException e) {
+	
+					return false;
+	
+				}
 				
-				return false;
-				
-			}
+			});
+	
+			cell.setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
+			cell.setOperator(operator);
+			cell.setName("σ  " + expression);
+			cell.setData(data);
+			
+			ActionClass.getGraph().getModel().setValue(jCell, "σ  " + expression);
 
-		});
-
-		((OperatorCell) cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
-		((OperatorCell) cell).setOperator(operator);
-
-		cell.setName("σ  " + textArea.getText());
+			cell.removeError();
+			
+		}catch(Exception e) {
+			
+			cell.setError();
+			
+		}
 
 		dispose();
 
@@ -427,14 +446,17 @@ public class FormFrameSelection extends JDialog implements ActionListener, Docum
 
 		String[] formattedInput = formatString(textArea.getText()).split(" ");
 
+		Evaluator evaluator = new Evaluator();
+		
 		if (formattedInput.length <= 2)
 			return false;
-		
+
 		Pattern pattern = Pattern.compile("[(|)|&|\\|]");
 		Matcher matcher = pattern.matcher(textArea.getText());
 		if (!matcher.find()) {
-		    // Input contains no operators or parentheses
-		    formattedInput[0] = "#¨#$¨%$&$%";
+
+			formattedInput[0] = "#¨#$¨%$&$%";
+		
 		}
 
 		for (String element : formattedInput) {

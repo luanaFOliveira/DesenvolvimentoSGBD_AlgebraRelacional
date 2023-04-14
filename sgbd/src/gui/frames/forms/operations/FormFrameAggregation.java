@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -18,35 +18,33 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 
 import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxGraph;
 
+import controller.ActionClass;
 import entities.Cell;
-import entities.OperatorCell;
+import entities.OperationCell;
 import sgbd.query.Operator;
 
 @SuppressWarnings("serial")
-public class FormFrameAggregation extends JDialog implements ActionListener {
+public class FormFrameAggregation extends JDialog implements ActionListener, IOperator {
 
 	private JPanel contentPane;
 	private JComboBox comboBoxColunas;
 	private JComboBox comboBoxOp;
 	private JButton btnPronto;
-	private Cell cell;
+	private OperationCell cell;
 	private Cell parentCell;
-	private Object jCell;
-	private mxGraph graph;
+	private mxCell jCell;
 	private List<String> columnsList;
 
-	public FormFrameAggregation(Object cell, Map<mxCell, Cell> cells, mxGraph graph) {
+	public FormFrameAggregation(mxCell jCell, AtomicReference<Boolean> exitReference) {
 
-		super((Window)null);
+		super((Window) null);
 		setModal(true);
 		setTitle("Agregação");
 
-		this.cell = cells.get(cell);
+		this.cell = (OperationCell) ActionClass.getCells().get(cell);
 		parentCell = this.cell.getParents().get(0);
-		this.jCell = cell;
-		this.graph = graph;
+		this.jCell = jCell;
 		initializeGUI();
 	}
 
@@ -112,30 +110,15 @@ public class FormFrameAggregation extends JDialog implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if (e.getSource() == btnPronto) {
-			executeOperation(comboBoxColunas.getSelectedItem().toString(), comboBoxOp.getSelectedItem().toString());
+			executeOperation(jCell, null);
 
 		}
 
 	}
 
-	public void executeOperation(String column, String op) {
+	public void executeOperation(mxCell jCell, List<String> data) {
 
-		Operator operator = parentCell.getData();
 		
-		operator.open();
-		
-		// if(op == "max") operator = new GroupOperator(new
-		// MaxOperator(parentCell.getData(),parentCell.getSourceTableName(column),column),parentCell.getSourceTableName(column),column);
-		// else if(op == "min") operator = new GroupOperator(new
-		// MinOperator(parentCell.getData(),parentCell.getSourceTableName(column),column),parentCell.getSourceTableName(column),column);
-
-		((OperatorCell) cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
-
-		((OperatorCell) cell).setOperator(operator);
-
-		operator.close();
-
-		dispose();
 
 	}
 }

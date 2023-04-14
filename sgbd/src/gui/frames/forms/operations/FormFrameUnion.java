@@ -9,7 +9,6 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.GroupLayout;
@@ -28,15 +27,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxGraph;
 
+import controller.ActionClass;
 import entities.Cell;
-import entities.OperatorCell;
+import entities.OperationCell;
 import sgbd.query.Operator;
 import sgbd.query.binaryop.UnionOperator;
 
 @SuppressWarnings("serial")
-public class FormFrameUnion extends JDialog implements ActionListener, DocumentListener{
+public class FormFrameUnion extends JDialog implements ActionListener, DocumentListener, IOperator{
 
 	private JPanel contentPane;
 	private JComboBox<String> columnsComboBox1;
@@ -56,25 +55,27 @@ public class FormFrameUnion extends JDialog implements ActionListener, DocumentL
 	private JTextArea textArea1;
 	private JTextArea textArea2;
 	
-	private Cell cell;
+	private OperationCell cell;
 	private Cell parentCell1;
 	private Cell parentCell2;
 	private mxCell jCell;
-	private mxGraph graph;
 	
 	private AtomicReference<Boolean> exitRef;
 
-	public FormFrameUnion(mxCell jCell, Map<mxCell, Cell> cells, mxGraph graph, AtomicReference<Boolean> exitRef) {
+	public FormFrameUnion() {
+		
+	}
+	
+	public FormFrameUnion(mxCell jCell, AtomicReference<Boolean> exitRef) {
 		
 		super((Window)null);
 		setModal(true);
 		setTitle("União");
 		
-		this.cell = cells.get(jCell);
+		this.cell = (OperationCell) ActionClass.getCells().get(jCell);
 		this.parentCell1 = this.cell.getParents().get(0);
 		this.parentCell2 = this.cell.getParents().get(1);
 		this.jCell = jCell;
-		this.graph = graph;
 		this.exitRef = exitRef;
 		
 		initializeGUI();
@@ -261,7 +262,16 @@ public class FormFrameUnion extends JDialog implements ActionListener, DocumentL
 		
 		}else if(e.getSource() == btnReady) {
 	        
-			executeOperation();
+			List<String> selectedColumns1 = new ArrayList<>(Arrays.asList(textArea1.getText().split("\n")));
+			List<String> selectedColumns2 = new ArrayList<>(Arrays.asList(textArea2.getText().split("\n")));
+			
+			selectedColumns1.remove(0);
+			selectedColumns2.remove(0);
+			
+			List<String> selectedColumns = new ArrayList<>(selectedColumns1);
+			selectedColumns.addAll(selectedColumns2);
+			
+			executeOperation(jCell, selectedColumns);
 			dispose();
 	        
 		}else if(e.getSource() == btnCancel) {
@@ -308,33 +318,53 @@ public class FormFrameUnion extends JDialog implements ActionListener, DocumentL
 		
 	}
 	
-	private void executeOperation() {
+	public void executeOperation(mxCell jCell, List<String> data) {
 		
-		Operator table1 = parentCell1.getData();
-		Operator table2 = parentCell2.getData();
-		
-		List<String> selectedColumns1 = new ArrayList<>(Arrays.asList(textArea1.getText().split("\n"))) ;
-		List<String> selectedColumns2 = new ArrayList<>(Arrays.asList(textArea2.getText().split("\n")));
+		OperationCell cell = (OperationCell) ActionClass.getCells().get(jCell);
 
-		selectedColumns1.remove(0);
-		selectedColumns2.remove(0);
+		try {
 		
-		selectedColumns1.replaceAll(s -> parentCell1.getSourceTableName(s) + "." + s);
-		selectedColumns2.replaceAll(s -> parentCell2.getSourceTableName(s) + "." + s);
+			if (data == null || !cell.hasParents() || cell.getParents().size() != 2 || data.size() % 2 != 0 || cell.hasParentErrors()) {
+	
+				throw new Exception();
+				
+			}
+	
+			Cell parentCell1 = cell.getParents().get(0);
+			Cell parentCell2 = cell.getParents().get(1);
+			
+			Operator table1 = parentCell1.getOperator();
+			Operator table2 = parentCell2.getOperator();
+			
+			List<String> selectedColumns1 = new ArrayList<>(data.subList(0, data.size()/2));
+			List<String> selectedColumns2 = new ArrayList<>(data.subList(data.size()/2, data.size()));
+	
+			selectedColumns1.replaceAll(s -> parentCell1.getSourceTableName(s) + "." + s);
+			selectedColumns2.replaceAll(s -> parentCell2.getSourceTableName(s) + "." + s);
+			
+			Operator operator = new UnionOperator(table1, table2, selectedColumns1, selectedColumns2);
+	
+			cell.setOperator(operator);
+	
+			selectedColumns1.replaceAll(s -> s.substring(s.indexOf(".")+1));
+			selectedColumns2.replaceAll(s -> s.substring(s.indexOf(".")+1));
+			
+			cell.setColumns(List.of(parentCell1.getColumns(), parentCell2.getColumns()), operator.getContentInfo().values());
+			
+			cell.setName("U   " + selectedColumns1.toString() + " U " + selectedColumns2.toString());    
+			
+			cell.setData(data);
+			
+	        ActionClass.getGraph().getModel().setValue(jCell,"U   " + selectedColumns1.toString() + " U " + selectedColumns2.toString());
 		
-		Operator operator = new UnionOperator(table1, table2, selectedColumns1, selectedColumns2);
-
-		((OperatorCell) cell).setOperator(operator);
-
-		selectedColumns1.replaceAll(s -> s.substring(s.indexOf(".")+1));
-		selectedColumns2.replaceAll(s -> s.substring(s.indexOf(".")+1));
-		
-		((OperatorCell)cell).setColumns(List.of(parentCell1.getColumns(), parentCell2.getColumns()), operator.getContentInfo().values());
-		
-		cell.setName("U   " + selectedColumns1.toString() + " U " + selectedColumns2.toString());    
-		
-        graph.getModel().setValue(jCell,"U   " + selectedColumns1.toString() + " U " + selectedColumns2.toString());
-		
+			cell.removeError();
+	        
+		}catch(Exception e) {
+			
+			cell.setError();
+			
+		}
+        
         dispose();
 		
 	}

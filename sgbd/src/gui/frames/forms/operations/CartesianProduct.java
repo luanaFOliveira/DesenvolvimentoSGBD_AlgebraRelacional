@@ -1,51 +1,64 @@
 package gui.frames.forms.operations;
 
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxGraph;
 
+import controller.ActionClass;
 import entities.Cell;
-import entities.OperatorCell;
+import entities.OperationCell;
 import sgbd.query.Operator;
 import sgbd.query.binaryop.joins.BlockNestedLoopJoin;
 
-public class CartesianProduct {
+public class CartesianProduct implements IOperator {
 
-	private Cell cell;
-	private Cell parentCell1;
-	private Cell parentCell2;
-	private Object jCell;
-	private mxGraph graph;
+	public CartesianProduct() {
+		
+	}
+	
+	public CartesianProduct(mxCell jCell, AtomicReference<Boolean> exitReference) {
 
-	public CartesianProduct(Object jCell, Map<mxCell, Cell> cells, mxGraph graph) {
-
-		this.cell = cells.get(jCell);
-		this.parentCell1 = this.cell.getParents().get(0);
-		this.parentCell2 = this.cell.getParents().get(1);
-		this.jCell = jCell;
-		this.graph = graph;
-		executeOperation();
+		executeOperation(jCell, null);
 
 	}
 
-	public void executeOperation() {
-
-		Operator table1 = parentCell1.getData();
-		Operator table2 = parentCell2.getData();
-
+	public void executeOperation(mxCell jCell, List<String> data) {
 		
-		Operator operator = new BlockNestedLoopJoin(table1, table2, (t1, t2) -> {
-			return true;
-		});
-
-		((OperatorCell) cell).setColumns(List.of(parentCell1.getColumns(), parentCell2.getColumns()),
-				operator.getContentInfo().values());
-		((OperatorCell) cell).setOperator(operator);
-		cell.setName(parentCell1.getName() + " X " + parentCell2.getName());
-
-		graph.getModel().setValue(jCell, "X");
+		OperationCell cell = (OperationCell) ActionClass.getCells().get(jCell);
+		
+		try {
+		
+			if (!cell.hasParents() || cell.getParents().size() != 2 || cell.hasParentErrors()) {
+				
+				throw new Exception();
+				
+			}
+			
+			Cell parentCell1 = cell.getParents().get(0);
+			Cell parentCell2 = cell.getParents().get(1);
+			
+			Operator table1 = parentCell1.getOperator();
+			Operator table2 = parentCell2.getOperator();
+	
+			Operator operator = new BlockNestedLoopJoin(table1, table2, (t1, t2) -> {
+				return true;
+			});
+	
+			cell.setColumns(List.of(parentCell1.getColumns(), parentCell2.getColumns()),
+					operator.getContentInfo().values());
+			cell.setOperator(operator);
+			cell.setName(parentCell1.getName() + " X " + parentCell2.getName());
+			
+			ActionClass.getGraph().getModel().setValue(jCell, "X");
+			
+			cell.removeError();
+		
+		}catch(Exception e) {
+			
+			cell.setError();
+			
+		}
 
 	}
 }

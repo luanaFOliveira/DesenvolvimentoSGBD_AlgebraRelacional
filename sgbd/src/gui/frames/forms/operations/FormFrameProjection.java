@@ -8,7 +8,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.GroupLayout;
@@ -26,16 +25,16 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxGraph;
 
+import controller.ActionClass;
 import entities.Cell;
-import entities.OperatorCell;
+import entities.OperationCell;
 import sgbd.query.Operator;
 import sgbd.query.unaryop.FilterColumnsOperator;
 import sgbd.table.Table;
 
 @SuppressWarnings("serial")
-public class FormFrameProjection extends JDialog implements ActionListener {
+public class FormFrameProjection extends JDialog implements ActionListener, IOperator {
 
 	private JPanel contentPane;
 	private JComboBox<String> columnsComboBox;
@@ -48,26 +47,27 @@ public class FormFrameProjection extends JDialog implements ActionListener {
 	private JTextArea textArea;
 
 	private List<String> columnsResult;
-	private Cell cell;
+	private OperationCell cell;
 	private Cell parentCell;
-	private Object jCell;
-	private mxGraph graph;
+	private mxCell jCell;
 
 	private AtomicReference<Boolean> exitReference;
 	private JButton btnCancel;
 	private JButton btnAddAll;
 
-	public FormFrameProjection(Object jCell, Map<mxCell, Cell> cells, mxGraph graph,
-			AtomicReference<Boolean> exitReference) {
+	public FormFrameProjection() {
+		
+	}
+	
+	public FormFrameProjection(mxCell jCell, AtomicReference<Boolean> exitReference) {
 
 		super((Window) null);
 		setModal(true);
 		setTitle("Projeção");
 
-		this.cell = cells.get(jCell);
+		this.cell = (OperationCell) ActionClass.getCells().get(jCell);
 		parentCell = this.cell.getParents().get(0);
 		this.jCell = jCell;
-		this.graph = graph;
 		this.exitReference = exitReference;
 
 		initializeGUI();
@@ -245,8 +245,7 @@ public class FormFrameProjection extends JDialog implements ActionListener {
 
 			columnsResult = new ArrayList<>(List.of(textArea.getText().split("\n")));
 			columnsResult.remove(0);
-			graph.getModel().setValue(jCell, "π  " + columnsResult.toString());
-			executeOperation();
+			executeOperation(jCell, columnsResult);
 
 		} else if (e.getSource() == btnCancel) {
 
@@ -266,25 +265,48 @@ public class FormFrameProjection extends JDialog implements ActionListener {
 		}
 	}
 
-	public void executeOperation() {
+	public void executeOperation(mxCell jCell, List<String> data) {
 
-		List<String> aux = parentCell.getColumnsName();
-		aux.removeAll(columnsResult);
+		OperationCell cell = (OperationCell) ActionClass.getCells().get(jCell);
 
-		Operator operator = parentCell.getData();
+		try {
 		
-		for (Table table : parentCell.getData().getSources()) {
+			if (data == null || !cell.hasParents() || cell.getParents().size() != 1 || cell.hasParentErrors()) {
+	
+				throw new Exception();
+	
+			}
+	
+			Cell parentCell = cell.getParents().get(0);
 			
-			System.out.println(table.getTableName());
-			operator = new FilterColumnsOperator(operator, table.getTableName(), aux);
+			List<String> aux = parentCell.getColumnsName();
+			aux.removeAll(data);
+	
+			Operator operator = parentCell.getOperator();
+	
+			for (Table table : parentCell.getOperator().getSources()) {
+	
+				operator = new FilterColumnsOperator(operator, table.getTableName(), aux);
+	
+			}
+	
+			cell.setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
+	
+			cell.setOperator(operator);
+	
+			cell.setName("π  " + data.toString());
+	
+			cell.setData(data);
+			
+			ActionClass.getGraph().getModel().setValue(jCell, "π  " + data.toString());
+			
+			cell.removeError();
+
+		}catch(Exception e) {
+			
+			cell.setError();
 			
 		}
-		
-		((OperatorCell) cell).setColumns(List.of(parentCell.getColumns()), operator.getContentInfo().values());
-
-		((OperatorCell) cell).setOperator(operator);
-
-		cell.setName("π  " + columnsResult.toString());
 		
 		dispose();
 
